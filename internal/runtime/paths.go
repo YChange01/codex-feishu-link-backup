@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/YChange01/codex-feishu-link/internal/pathscope"
+	"github.com/YChange01/codex-feishu-link/internal/product"
 )
 
 type Paths struct {
@@ -38,10 +39,10 @@ func DefaultPaths() (Paths, error) {
 		return Paths{}, err
 	}
 
-	configDir := filepath.Join(configHome, ProductName)
-	dataDir := filepath.Join(dataHome, ProductName)
+	configDir := filepath.Join(configHome, product.LegacyNamespace)
+	dataDir := filepath.Join(dataHome, product.LegacyNamespace)
 	logsDir := filepath.Join(dataDir, "logs")
-	stateDir := filepath.Join(stateHome, ProductName)
+	stateDir := filepath.Join(stateHome, product.LegacyNamespace)
 	return Paths{
 		ConfigDir:           configDir,
 		ConfigFile:          filepath.Join(configDir, "config.json"),

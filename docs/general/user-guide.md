@@ -1,12 +1,12 @@
 # 使用说明书
 
 > Type: `general`
-> Updated: `2026-10-06`
-> Summary: 更新产品名称及 macOS 安装器名称，补充当前安装入口说明。
+> Updated: `2026-10-07`
+> Summary: 公开命令和品牌统一为 Link，补充共享会话权限继承与飞书实际授权的排错说明。
 
 ## 1. 这是什么
 
-`codex-feishu-relay` 用来把你正在使用的 Codex 工作现场带到飞书里。
+`codex-feishu-link` 用来把你正在使用的 Codex 工作现场带到飞书里。
 
 它适合的不是“专门坐在电脑前高强度连续操作”的时段，而是这些更常见的场景：
 
@@ -154,7 +154,7 @@ codex-feishu-relay_<version>_windows_amd64_installer.exe
 codex-feishu-relay_<version>_darwin_universal_installer.dmg
 ```
 
-运行 DMG 里的 **Install Codex Feishu Relay.app**。首次安装可以选择安装目录；完成后在结果页打开 WebSetup。已经安装过时再次运行，会按 repair / 升级处理。
+运行 DMG 里的 **Install Codex Feishu Link.app**。首次安装可以选择安装目录；完成后在结果页打开 WebSetup。已经安装过时再次运行，会按 repair / 升级处理。
 
 ### 5.3 一条命令安装
 
@@ -174,7 +174,7 @@ irm https://raw.githubusercontent.com/YChange01/codex-feishu-link/main/install-r
 
 1. 识别当前平台
 2. 下载对应 release 包
-3. 安装 `codex-feishu-relay`
+3. 安装 `codex-feishu-link`
 4. 启动本地后台服务
 5. 打开或打印 WebSetup 地址
 
@@ -203,7 +203,7 @@ curl -fsSL https://raw.githubusercontent.com/YChange01/codex-feishu-link/main/in
 macOS / Linux：
 
 ```bash
-./codex-feishu-relay install -bootstrap-only -start-daemon
+./codex-feishu-link install -bootstrap-only -start-daemon
 ```
 
 Windows PowerShell：
@@ -266,10 +266,10 @@ Windows PowerShell：
 
 这一步主要会告诉你：
 
-- 当前 daemon 会用哪个 `codex-feishu-relay` 作为 headless 启动器
+- 当前 daemon 会用哪个 `codex-feishu-link` 作为 headless 启动器
 - wrapper 实际会调用哪个真实 `codex`
 - 这些路径在当前环境里是否真的可用
-- 有没有明显风险，比如只靠 `PATH` 找到、或者错误地回指到 `codex-feishu-relay` 自己
+- 有没有明显风险，比如只靠 `PATH` 找到、或者错误地回指到 `codex-feishu-link` 自己
 
 注意它检查的是“能不能启动起来”，不负责帮你验证 Codex 登录状态、账号配置或 provider 凭据。
 
@@ -546,6 +546,10 @@ bare 命令会返回可切换的 Profile 卡片；也可以直接带名字切换
 ### 8.6 文档预览会更方便
 
 如果飞书应用开通了 `drive:drive`，最终回复里的本地文档链接会尽量自动替换成飞书可预览链接。
+
+遇到 `99991672` 或“Access denied”时，请确认开通的是当前机器人应用的**应用身份（tenant）权限**，并完成版本发布和所需的管理员审核；仅在配置页面添加权限、或授权了同名用户身份权限，都不代表机器人已经能调用。配置检查与真实 API 缺权记录分开显示；确认授权生效后可刷新检查，或在请求冷却结束后重试原操作。明确授权或实际调用成功后会解除缺权状态；检查失败保留提示，不需要反复重填 App Secret。
+
+这与 Codex 的执行审批是两套权限。共享桌面会话默认继承桌面的审批和沙箱设置；使用 `/permission` 可查看或明确覆盖，清除覆盖后重新跟随底层。只读或自定义沙箱会展示原生状态，不会被当作完全访问。
 
 当前重点支持：
 

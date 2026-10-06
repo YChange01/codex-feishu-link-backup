@@ -131,7 +131,7 @@ fi
 
 dist_dir="$(cd "${dist_dir}" && pwd)"
 if [[ -z "${output_path}" ]]; then
-  output_path="${dist_dir}/codex-feishu-relay_${package_version_label}_darwin_universal_installer.dmg"
+  output_path="${dist_dir}/codex-feishu-link_${package_version_label}_darwin_universal_installer.dmg"
 fi
 
 temp_root=""
@@ -143,8 +143,8 @@ cleanup() {
 trap cleanup EXIT
 
 if [[ -z "${output_app}" ]]; then
-  temp_root="$(mktemp -d "${TMPDIR:-/tmp}/codex-feishu-relay-macos-packaged-installer-XXXXXX")"
-  output_app="${temp_root}/Install Codex Feishu Relay.app"
+  temp_root="$(mktemp -d "${TMPDIR:-/tmp}/codex-feishu-link-macos-packaged-installer-XXXXXX")"
+  output_app="${temp_root}/Install Codex Feishu Link.app"
 fi
 
 bash "${ROOT_DIR}/scripts/release/build-macos-installer-app.sh" \

@@ -1,6 +1,6 @@
-# Codex Feishu Relay — Remote Control for AI Coding Agents
+# Codex Feishu Link — Remote Control for AI Coding Agents
 
-**Codex Feishu Relay** 把本机的 Codex、Claude Code 和 OpenCode 工作现场连接到飞书。它不只推送通知：你可以在手机上查看实时进度、接续桌面已有会话、切换工作区和模型设置，并在任务运行时继续发送指令。
+**Codex Feishu Link** 把本机的 Codex、Claude Code 和 OpenCode 工作现场连接到飞书。它不只推送通知：你可以在手机上查看实时进度、接续桌面已有会话、切换工作区和模型设置，并在任务运行时继续发送指令。
 
 > A full-featured Feishu (Lark) remote for OpenAI Codex, Claude Code, and OpenCode: continue desktop sessions, manage workspaces and permissions, steer running tasks, and monitor progress from your phone.
 
@@ -15,7 +15,9 @@
 
 详细使用说明见 [用户使用说明书](./docs/general/user-guide.md)。
 
-本仓库地址为 `YChange01/codex-feishu-link`，可执行程序名称仍为 `codex-feishu-relay`。源码从上游 v2.1.2 快照继续开发，包含桌面共享会话等本地扩展；来源见 [NOTICE](./NOTICE)。
+本仓库地址与主命令统一为 `codex-feishu-link`，产品名称为 **Codex Feishu Link**。源码从上游 v2.1.2 快照继续开发，包含桌面共享会话等本地扩展；来源见 [NOTICE](./NOTICE)。
+
+升级兼容：旧命令 `codex-feishu-relay` 仍可使用；既有 `codex-feishu-relay` 配置、数据与日志目录、服务标识及 `CODEX_FEISHU_RELAY_*` 环境变量保持兼容，升级沿用原有凭据和安装状态。
 
 ## 安装
 
@@ -34,15 +36,15 @@ cd web
 npm ci
 npm run build
 cd ..
-go build -o ./bin/codex-feishu-relay ./cmd/codex-feishu-relay
-./bin/codex-feishu-relay install -bootstrap-only -start-daemon
+go build -o ./bin/codex-feishu-link ./cmd/codex-feishu-link
+./bin/codex-feishu-link install -bootstrap-only -start-daemon
 ```
 
 Windows PowerShell 可执行相同的克隆与前端构建步骤，最后两条改为：
 
 ```powershell
-go build -o .\bin\codex-feishu-relay.exe ./cmd/codex-feishu-relay
-.\bin\codex-feishu-relay.exe install -bootstrap-only -start-daemon
+go build -o .\bin\codex-feishu-link.exe ./cmd/codex-feishu-link
+.\bin\codex-feishu-link.exe install -bootstrap-only -start-daemon
 ```
 
 打开命令输出中的 `/setup` 地址完成飞书接入。桌面共享后台适配是独立的可选能力，另见 [codex-desktop-link](./cmd/codex-desktop-link/README.md)。
@@ -54,7 +56,7 @@ go build -o .\bin\codex-feishu-relay.exe ./cmd/codex-feishu-relay
 1. 从 [GitHub Releases](https://github.com/YChange01/codex-feishu-link/releases) 下载：
 
    ```text
-   codex-feishu-relay_<version>_windows_amd64_installer.exe
+   codex-feishu-link_<version>_windows_amd64_installer.exe
    ```
 
 2. 双击运行安装器。
@@ -66,10 +68,10 @@ go build -o .\bin\codex-feishu-relay.exe ./cmd/codex-feishu-relay
 1. 从 [GitHub Releases](https://github.com/YChange01/codex-feishu-link/releases) 下载：
 
    ```text
-   codex-feishu-relay_<version>_darwin_universal_installer.dmg
+   codex-feishu-link_<version>_darwin_universal_installer.dmg
    ```
 
-2. 打开 DMG，运行其中的 **Install Codex Feishu Relay.app**。
+2. 打开 DMG，运行其中的 **Install Codex Feishu Link.app**。
 3. 首次安装可以选择安装目录；完成后在结果页打开 WebSetup 完成飞书接入。
 4. 已安装过时再次运行，会按 repair / 升级处理。
 
@@ -116,13 +118,13 @@ curl -fsSL https://raw.githubusercontent.com/YChange01/codex-feishu-link/main/in
 macOS / Linux：
 
 ```bash
-./codex-feishu-relay install -bootstrap-only -start-daemon
+./codex-feishu-link install -bootstrap-only -start-daemon
 ```
 
 Windows PowerShell：
 
 ```powershell
-.\codex-feishu-relay.exe install -bootstrap-only -start-daemon
+.\codex-feishu-link.exe install -bootstrap-only -start-daemon
 ```
 
 然后打开输出里的 `/setup` 地址完成初始化。
@@ -171,7 +173,7 @@ daemon 不会在后台自动弹升级提示；升级只通过这条手动入口�
 - **Claude Profile**：独立设置认证方式、base URL、模型、推理强度等
 - **OpenCode Profile**：独立设置 OpenCode 后端参数
 
-这些 profile 保存在 codex-feishu-relay 自己的 `config.json` 里，不会改写 `~/.codex` 或 `~/.claude` 的原有配置，可以随时切换、并行使用。
+这些 profile 保存在 codex-feishu-link 自己的 `config.json` 里，不会改写 `~/.codex` 或 `~/.claude` 的原有配置，可以随时切换、并行使用。
 
 在飞书里切换：
 

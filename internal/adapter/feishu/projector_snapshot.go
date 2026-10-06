@@ -278,7 +278,7 @@ func formatSnapshotLocalRequestedPromptPlain(summary control.PromptRouteSummary)
 	} else {
 		parts = append(parts, "Plan 不覆盖")
 	}
-	return strings.Join(parts, "，") + "（未覆盖的项目跟随 VS Code 当前状态）"
+	return strings.Join(parts, "，") + "（未覆盖的项目跟随底层当前状态）"
 }
 
 func snapshotOverridePart(label, value string, format func(string) string) string {
@@ -298,7 +298,7 @@ func displaySnapshotPlanMode(value string) string {
 func snapshotPlanModeText(summary control.PromptRouteSummary, dispatch control.DispatchSummary) string {
 	if summary.UsesLocalRequestedOverrides {
 		if !summary.PlanModeOverrideSet {
-			return "跟随 VS Code 当前状态"
+			return "跟随底层当前状态"
 		}
 		return "飞书覆盖：" + displaySnapshotPlanMode(summary.OverridePlanMode)
 	}

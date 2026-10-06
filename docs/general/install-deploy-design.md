@@ -1,8 +1,8 @@
 # 安装与部署设计
 
 > Type: `general`
-> Updated: `2026-10-06`
-> Summary: 统一项目产品名称及 macOS 安装器显示名称；升级事务边界保持不变。
+> Updated: `2026-10-07`
+> Summary: 公开命令和产品名称统一为 Codex Feishu Link，既有安装路径与环境变量继续保持兼容。
 
 ## 1. 范围
 
@@ -10,7 +10,7 @@
 
 - GitHub Release 产物形态
 - 在线安装脚本与手动解压安装
-- `codex-feishu-relay install` 的 bootstrap 语义
+- `codex-feishu-link install` 的 bootstrap 语义
 - `codex-feishu-relay packaged-install` 的 shared contract
 - WebSetup / Admin UI 的职责边界
 - 仓库 helper 与产品入口的区分
@@ -30,7 +30,7 @@
 - 执行统一的：
 
 ```bash
-codex-feishu-relay install -bootstrap-only -start-daemon
+codex-feishu-link install -bootstrap-only -start-daemon
 ```
 
 默认缓存目录：
@@ -54,7 +54,7 @@ release 包解压后，最终用户直接运行统一二进制：
 macOS / Linux:
 
 ```bash
-./codex-feishu-relay install -bootstrap-only -start-daemon
+./codex-feishu-link install -bootstrap-only -start-daemon
 ```
 
 Windows PowerShell:
@@ -93,11 +93,11 @@ Windows PowerShell:
 - `setup.ps1`
   - Windows 上的源码仓库 helper
   - 默认执行本地构建后再跑 `-bootstrap-only -start-daemon`
-- `go build -o ./bin/codex-feishu-relay ./cmd/codex-feishu-relay`
+- `go build -o ./bin/codex-feishu-relay ./cmd/codex-feishu-link`
   - Linux / macOS 上先构建本地二进制
-- `./bin/codex-feishu-relay install -bootstrap-only -start-daemon`
+- `./bin/codex-feishu-link install -bootstrap-only -start-daemon`
   - 已经构建过本地二进制时，可直接重复 bootstrap
-- `./bin/codex-feishu-relay daemon`
+- `./bin/codex-feishu-link daemon`
   - 需要前台观察 daemon 启动或日志时使用
 
 仓库中不再保留单独的 `install.sh` 生命周期脚本。
@@ -108,7 +108,7 @@ Windows PowerShell:
 
 原因不是二进制无法容器化，而是这类场景下对任意文件和目录访问的配置体验很差；与此同时，当前实现已经收敛为 Go 单二进制，直接本机安装和运行的复杂度已经足够低，继续维护 Docker 入口的收益不高。
 
-## 3. `codex-feishu-relay install` 的当前语义
+## 3. `codex-feishu-link install` 的当前语义
 
 ### 3.1 默认非交互 bootstrap
 
@@ -129,7 +129,7 @@ Windows PowerShell:
 
 ### 3.2 仍保留的高级模式
 
-`codex-feishu-relay install` 仍然保留旧的完整安装能力，方便仓库联调和特殊场景：
+`codex-feishu-link install` 仍然保留旧的完整安装能力，方便仓库联调和特殊场景：
 
 - `-interactive`
 - `-integration managed_shim`
@@ -171,8 +171,8 @@ codex-feishu-relay packaged-install [flags]
 
 - packaged installer 包装层不再直接向 `packaged-install` 传平台特定 `service-manager`
 - `service-manager` 继续是 install/runtime 内核概念，保留给：
-  - `codex-feishu-relay install`
-  - `codex-feishu-relay service ...`
+  - `codex-feishu-link install`
+  - `codex-feishu-link service ...`
   - `InstallState`
 - existing `detached` -> 平台默认 autostart 的迁移，不属于 packaged repair 的默认副作用；若未来需要，应作为显式迁移动作单独设计
 
@@ -210,7 +210,7 @@ codex-feishu-relay packaged-install [flags]
     - `Open Admin UI` 与 `Continue WebSetup` 互斥
     - 结果页至少支持 `en` / `zh-CN`
 - macOS
-  - 首期形态已收口为 `dmg + Install Codex Feishu Relay.app`
+  - 首期形态已收口为 `dmg + Install Codex Feishu Link.app`
   - installer app 自身是 universal，可同时在 Intel / Apple Silicon 上原生运行
   - app bundle 的 `Contents/Resources/payload/` 内同时携带：
     - `codex-feishu-relay-darwin-amd64`
@@ -245,7 +245,7 @@ codex-feishu-relay packaged-install [flags]
 - `scripts/release/build-macos-installer-app.sh`
   - 从 release tarball 中提取双架构 payload
   - 编译两份 GUI binary 并 `lipo` 成 universal app executable
-  - 组装 `Install Codex Feishu Relay.app`
+  - 组装 `Install Codex Feishu Link.app`
 - `scripts/release/build-macos-dmg.sh`
   - 基于生成好的 `.app` 产出最终分发 `dmg`
 
@@ -371,7 +371,7 @@ named instance <instanceId>:
 - macOS: `<baseDir>/Library/Application Support/codex-feishu-relay-<instanceId>/bin`
 - Windows: `<baseDir>/AppData/Local/codex-feishu-relay-<instanceId>/bin`
 
-如果目标 `install-state.json` 已经存在，则 `codex-feishu-relay install` 在未显式传 `-install-bin-dir` 时会优先复用现有 `installedBinary` 所在目录，而不是擅自迁移稳定入口。唯一的例外是 legacy version-scoped 入口：当 `CurrentBinaryPath` 位于该实例的 `VersionsRoot` 下（例如 `releases/v1.8.4/codex-feishu-relay`）时，upgrade / repair 会自动将 live binary 迁移到该实例的 canonical 无版本稳定入口（例如 `bin/codex-feishu-relay`）。位于 `VersionsRoot` 外的用户自定义安装目录不会被迁移。
+如果目标 `install-state.json` 已经存在，则 `codex-feishu-link install` 在未显式传 `-install-bin-dir` 时会优先复用现有 `installedBinary` 所在目录，而不是擅自迁移稳定入口。唯一的例外是 legacy version-scoped 入口：当 `CurrentBinaryPath` 位于该实例的 `VersionsRoot` 下（例如 `releases/v1.8.4/codex-feishu-relay`）时，upgrade / repair 会自动将 live binary 迁移到该实例的 canonical 无版本稳定入口（例如 `bin/codex-feishu-relay`）。位于 `VersionsRoot` 外的用户自定义安装目录不会被迁移。
 
 release 包中的归档目录只是版本缓存位置，不是长期运行路径。
 
@@ -405,7 +405,7 @@ Linux 当前已支持显式选择 `systemd_user` 作为 daemon lifecycle manager
 - `detached`
   - 仍保留为默认兼容模式
 - `systemd_user`
-  - 由 `codex-feishu-relay service install-user|enable|start|stop|restart|status` 管理
+  - 由 `codex-feishu-link service install-user|enable|start|stop|restart|status` 管理
   - stable unit 为 `<serviceHome>/.config/systemd/user/codex-feishu-relay.service`
   - 命名实例 unit 为 `<serviceHome>/.config/systemd/user/codex-feishu-relay-<instanceId>.service`
   - 这里的 `serviceHome` 指真实 `systemd --user` home，通常仍是 `$HOME`；它不等于 install `baseDir`
@@ -480,9 +480,9 @@ Windows 下文件名为 `codex-feishu-relay.exe`。
 当前 `managed_shim` 已从“复制主 binary 到扩展入口”收敛为“tiny shim + sidecar 绑定”：
 
 1. 原始 `codex` 重命名为 `codex.real` 或 `codex.real.exe`
-2. 在原始入口路径写入独立 tiny shim（不再复制整份 `codex-feishu-relay`）
+2. 在原始入口路径写入独立 tiny shim（不再复制整份 `codex-feishu-link`）
 3. 在入口旁写入 sidecar 绑定配置，记录该入口对应的 install target / state/config 定位信息
-4. 运行时由 tiny shim 读取 sidecar，再解析 install-state / config，定位该实例当前可用的 `codex-feishu-relay` 并 `exec`
+4. 运行时由 tiny shim 读取 sidecar，再解析 install-state / config，定位该实例当前可用的 `codex-feishu-link` 并 `exec`
 5. 若 sidecar 或目标安装失效，shim 会回退执行同目录 `codex.real`，避免 VS Code 入口直接不可用
 
 detect/apply/reinstall 的当前规则也同步收紧：
@@ -531,9 +531,9 @@ detect/apply/reinstall 的当前规则也同步收紧：
 
 对仓库联调：
 
-- `go build -o ./bin/codex-feishu-relay ./cmd/codex-feishu-relay`
-- `./bin/codex-feishu-relay install -bootstrap-only -start-daemon`
-- `codex-feishu-relay install -interactive`
+- `go build -o ./bin/codex-feishu-relay ./cmd/codex-feishu-link`
+- `./bin/codex-feishu-link install -bootstrap-only -start-daemon`
+- `codex-feishu-link install -interactive`
 
 仍然可以直接在 CLI 里触发接管，但当前只保留 `managed_shim` 这一条接入路径。
 
@@ -543,7 +543,7 @@ detect/apply/reinstall 的当前规则也同步收紧：
 
 当前 `scripts/release/build-artifacts.sh` 为每个平台构建：
 
-- 一个带版本号的 `codex-feishu-relay` / `codex-feishu-relay.exe`
+- 一个带版本号的 `codex-feishu-link` / `codex-feishu-relay.exe`
 - 平台归档是 binary-only，只包含归档目录和对应平台二进制
 
 另外单独生成：
@@ -726,13 +726,13 @@ curl -fsSL https://raw.githubusercontent.com/YChange01/codex-feishu-link/main/in
 手动解压后启动 WebSetup：
 
 ```bash
-./codex-feishu-relay install -bootstrap-only -start-daemon
+./codex-feishu-link install -bootstrap-only -start-daemon
 ```
 
 仓库联调：
 
 ```bash
-go build -o ./bin/codex-feishu-relay ./cmd/codex-feishu-relay
-./bin/codex-feishu-relay install -bootstrap-only -start-daemon
-./bin/codex-feishu-relay daemon
+go build -o ./bin/codex-feishu-relay ./cmd/codex-feishu-link
+./bin/codex-feishu-link install -bootstrap-only -start-daemon
+./bin/codex-feishu-link daemon
 ```

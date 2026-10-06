@@ -147,7 +147,7 @@ describe("AdminRoute", () => {
 
     expect(
       await screen.findByRole("heading", {
-        name: "Codex Feishu Relay v1.7.0 管理",
+        name: "Codex Feishu Link v1.7.0 管理",
       }),
     ).toBeInTheDocument();
     expect(screen.getAllByRole("button", { name: "机器人" }).length).toBeGreaterThan(0);

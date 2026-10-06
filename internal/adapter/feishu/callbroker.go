@@ -3,6 +3,7 @@ package feishu
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"strings"
 	"sync"
 	"time"
@@ -105,7 +106,10 @@ type PermissionBlockedError struct {
 	API          string
 	BlockedUntil time.Time
 	gap          PermissionGapEvidence
+	cause        error
 }
+
+func (e *PermissionBlockedError) Unwrap() error { return e.cause }
 
 func (e *PermissionBlockedError) Error() string {
 	if e == nil {
@@ -134,6 +138,7 @@ type callBucketState struct {
 type permissionBlockState struct {
 	gap          PermissionGapEvidence
 	blockedUntil time.Time
+	cause        error
 }
 
 type FeishuCallBroker struct {
@@ -142,12 +147,13 @@ type FeishuCallBroker struct {
 	now       func() time.Time
 	sleep     func(context.Context, time.Duration) error
 
-	mu               sync.Mutex
-	appBucket        callBucketState
-	classBuckets     map[CallClass]*callBucketState
-	resourceBuckets  map[string]*callBucketState
-	permissionBlocks map[string]*permissionBlockState
-	apiPermissions   map[string]string
+	mu                   sync.Mutex
+	appBucket            callBucketState
+	classBuckets         map[CallClass]*callBucketState
+	resourceBuckets      map[string]*callBucketState
+	permissionBlocks     map[string]*permissionBlockState
+	apiPermissions       map[string]string
+	permissionResultHook func(string, error)
 }
 
 func NewFeishuCallBroker(gatewayID string, sdkClient *lark.Client) *FeishuCallBroker {
@@ -199,10 +205,14 @@ func (b *FeishuCallBroker) do(ctx context.Context, spec CallSpec, fn func(contex
 		}
 		result, err := fn(ctx)
 		if err == nil {
+			if sdkResponseSucceeded(result) {
+				b.observePermissionResult(spec.API, nil)
+			}
 			return result, nil
 		}
 		if gap, ok := ExtractPermissionGap(err); ok {
-			b.markPermissionBlocked(spec, gap)
+			b.markPermissionBlocked(spec, gap, err)
+			b.observePermissionResult(spec.API, err)
 			return result, err
 		}
 		if rate, ok := ExtractRateLimit(err); ok {
@@ -214,6 +224,20 @@ func (b *FeishuCallBroker) do(ctx context.Context, spec CallSpec, fn func(contex
 		}
 		return result, err
 	}
+}
+
+// Some SDK callers check API codes outside the broker callback. A nil Go error
+// alone therefore cannot prove that the previously denied API now succeeds.
+func sdkResponseSucceeded(result any) bool {
+	response, ok := result.(interface{ Success() bool })
+	if !ok {
+		return false
+	}
+	value := reflect.ValueOf(response)
+	if value.Kind() == reflect.Pointer && value.IsNil() {
+		return false
+	}
+	return response.Success()
 }
 
 func (b *FeishuCallBroker) normalizeSpec(spec CallSpec) CallSpec {
@@ -272,10 +296,11 @@ func (b *FeishuCallBroker) currentPermissionBlock(spec CallSpec) (*PermissionBlo
 		API:          api,
 		BlockedUntil: block.blockedUntil,
 		gap:          block.gap,
+		cause:        block.cause,
 	}, positiveDuration(block.blockedUntil.Sub(now))
 }
 
-func (b *FeishuCallBroker) markPermissionBlocked(spec CallSpec, gap PermissionGapEvidence) {
+func (b *FeishuCallBroker) markPermissionBlocked(spec CallSpec, gap PermissionGapEvidence, cause error) {
 	key := permissionBlockKey(gap.Scope, gap.ScopeType)
 	if key == "" {
 		return
@@ -290,6 +315,7 @@ func (b *FeishuCallBroker) markPermissionBlocked(spec CallSpec, gap PermissionGa
 		b.permissionBlocks[key] = block
 	}
 	block.gap = gap
+	block.cause = cause
 	block.blockedUntil = now.Add(callBrokerPermissionBlockTTL)
 	if api != "" {
 		b.apiPermissions[api] = key
@@ -297,26 +323,15 @@ func (b *FeishuCallBroker) markPermissionBlocked(spec CallSpec, gap PermissionGa
 }
 
 func (b *FeishuCallBroker) ClearGrantedPermissionBlocks(scopes []AppScopeStatus) {
-	granted := map[string]bool{}
-	for _, item := range scopes {
-		if !scopeGranted(item) {
-			continue
-		}
-		key := permissionBlockKey(item.ScopeName, item.ScopeType)
-		if key != "" {
-			granted[key] = true
-		}
-		if fallback := permissionBlockKey(item.ScopeName, ""); fallback != "" {
-			granted[fallback] = true
-		}
-	}
-	if len(granted) == 0 {
-		return
-	}
 	b.mu.Lock()
 	defer b.mu.Unlock()
-	for key := range granted {
-		b.dropPermissionKeyLocked(key)
+	for key, block := range b.permissionBlocks {
+		if block == nil {
+			continue
+		}
+		if _, ok := MatchScopeRequirement(block.gap.Scope, block.gap.ScopeType, scopes); ok {
+			b.dropPermissionKeyLocked(key)
+		}
 	}
 }
 

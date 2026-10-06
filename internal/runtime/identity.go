@@ -13,9 +13,10 @@ import (
 
 	"github.com/YChange01/codex-feishu-link/internal/core/agentproto"
 	"github.com/YChange01/codex-feishu-link/internal/pathscope"
+	"github.com/YChange01/codex-feishu-link/internal/product"
 )
 
-const ProductName = "codex-feishu-relay"
+const ProductName = product.Name
 
 func CurrentBinaryIdentityWithBranch(version, branch string) (agentproto.BinaryIdentity, error) {
 	executable, err := os.Executable()
@@ -62,7 +63,7 @@ func NewServerIdentityWithBranch(version, branch, configPath string, startedAt t
 }
 
 func CompatibleIdentity(local agentproto.BinaryIdentity, remote agentproto.BinaryIdentity) bool {
-	if remote.Product != "" && remote.Product != ProductName {
+	if remote.Product != "" && !product.IsCompatibleName(remote.Product) {
 		return false
 	}
 	if local.BuildFingerprint != "" && remote.BuildFingerprint != "" {

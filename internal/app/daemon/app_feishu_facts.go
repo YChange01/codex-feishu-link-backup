@@ -16,8 +16,9 @@ const feishuFactsFreshTTL = 2 * time.Minute
 
 var getFeishuBotInfo = feishu.GetBotInfo
 
-func feishuFactsScopesFresh(record feishufacts.Record, now time.Time) bool {
+func (a *App) feishuFactsScopesFresh(record feishufacts.Record, now time.Time) bool {
 	return !record.ScopesFetchedAt.IsZero() &&
+		!record.ScopesFetchedAt.Before(a.daemonStartedAt) &&
 		record.ScopesError == "" &&
 		now.Sub(record.ScopesFetchedAt) <= feishuFactsFreshTTL
 }
@@ -101,6 +102,7 @@ func (a *App) RefreshFeishuBotFacts(ctx context.Context, gatewayID string) (feis
 		GatewayID: runtimeCfg.GatewayID,
 		AppID:     runtimeCfg.AppID,
 		AppSecret: runtimeCfg.AppSecret,
+		Domain:    runtimeCfg.Domain,
 	}
 	botInfo, botErr := getFeishuBotInfo(ctx, cfg)
 	scopes, scopeErr := listFeishuAppConfiguredScopes(ctx, cfg)
@@ -147,7 +149,7 @@ func (a *App) RefreshFeishuBotFacts(ctx context.Context, gatewayID string) (feis
 		}
 	}
 
-	a.afterFeishuFactsRefresh(gatewayID, scopes, scopeErr)
+	a.verifyFeishuPermissionGaps(ctx, cfg)
 
 	if scopeErr != nil {
 		return record, scopeErr
@@ -158,13 +160,36 @@ func (a *App) RefreshFeishuBotFacts(ctx context.Context, gatewayID string) (feis
 	return record, nil
 }
 
-func (a *App) afterFeishuFactsRefresh(gatewayID string, scopes []feishu.AppScopeStatus, scopeErr error) {
+func (a *App) verifyFeishuPermissionGaps(ctx context.Context, cfg feishu.LiveGatewayConfig) {
 	a.feishuRuntime.permissionMu.RLock()
-	hasGaps := len(a.feishuRuntime.permissionGaps[gatewayID]) != 0
+	hasGaps := len(a.feishuRuntime.permissionGaps[cfg.GatewayID]) != 0
 	a.feishuRuntime.permissionMu.RUnlock()
-	if hasGaps {
-		a.applyFeishuPermissionVerificationResult(gatewayID, scopes, scopeErr)
+	if !hasGaps {
+		return
 	}
+	scopes, err := listFeishuAppGrantedScopes(ctx, cfg)
+	// Pin the identity while applying evidence. Never wait here: this refresh
+	// may run inside an action gate that replacement is currently draining while
+	// holding feishuApplyMu. Discard this retryable evidence during replacement;
+	// preserve the gap and let the next refresh or real API retry resolve it.
+	if !a.feishuApplyMu.TryLock() {
+		return
+	}
+	defer a.feishuApplyMu.Unlock()
+	loaded, loadErr := a.loadAdminConfig()
+	if loadErr != nil {
+		return
+	}
+	current, ok := a.runtimeGatewayConfigFor(loaded.Config, cfg.GatewayID)
+	if !ok || current.AppID != cfg.AppID || current.AppSecret != cfg.AppSecret || current.Domain != cfg.Domain {
+		return
+	}
+	if owner, ok := a.gateway.(interface {
+		MatchesPermissionVerificationConfig(feishu.LiveGatewayConfig) bool
+	}); ok && !owner.MatchesPermissionVerificationConfig(cfg) {
+		return
+	}
+	a.applyFeishuPermissionVerificationResult(cfg.GatewayID, scopes, err)
 }
 
 func feishuFactsScopesFromAppScopes(scopes []feishu.AppScopeStatus) []feishufacts.ScopeStatus {

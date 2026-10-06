@@ -23,7 +23,7 @@ final class InstallerAppDelegate: NSObject, NSApplicationDelegate {
             backing: .buffered,
             defer: false
         )
-        window.title = "Install Codex Feishu Relay"
+        window.title = "Install Codex Feishu Link"
         window.center()
         window.isReleasedWhenClosed = false
         window.contentViewController = controller
@@ -322,7 +322,7 @@ final class InstallerViewController: NSViewController {
         case .installing:
             stepLabel.stringValue = "Installing"
             titleLabel.stringValue = "正在安装"
-            summaryLabel.stringValue = "安装器正在调用嵌入的 Codex Feishu Relay，并根据当前安装状态执行首装、升级或重装修复。"
+            summaryLabel.stringValue = "安装器正在调用嵌入的 Codex Feishu Link，并根据当前安装状态执行首装、升级或重装修复。"
             detailLabel.stringValue = "如果你正在修复已有安装，当前目录和服务状态会被自动复用。"
             infoLabel.stringValue = ""
             infoLabel.isHidden = true

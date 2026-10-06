@@ -55,9 +55,9 @@ func TestTaskSchedulerTaskNameForInstance(t *testing.T) {
 func TestNormalizeServicePathValueStripsWindowsExtendedPrefix(t *testing.T) {
 	withWindowsGOOS(t)
 	tests := map[string]string{
-		`\\?\C:\Codex Feishu Relay\bin\codex-feishu-relay.exe`: `C:\Codex Feishu Relay\bin\codex-feishu-relay.exe`,
-		`//?/C:/Codex Feishu Relay/bin/codex-feishu-relay.exe`: `C:\Codex Feishu Relay\bin\codex-feishu-relay.exe`,
-		`\\?\UNC\server\share\Codex Feishu Relay\config.json`:  `\\server\share\Codex Feishu Relay\config.json`,
+		`\\?\C:\Codex Feishu Link\bin\codex-feishu-relay.exe`: `C:\Codex Feishu Link\bin\codex-feishu-relay.exe`,
+		`//?/C:/Codex Feishu Link/bin/codex-feishu-relay.exe`: `C:\Codex Feishu Link\bin\codex-feishu-relay.exe`,
+		`\\?\UNC\server\share\Codex Feishu Link\config.json`:  `\\server\share\Codex Feishu Link\config.json`,
 	}
 	for input, want := range tests {
 		if got := normalizeServicePathValue(input); got != want {
@@ -68,7 +68,7 @@ func TestNormalizeServicePathValueStripsWindowsExtendedPrefix(t *testing.T) {
 
 func TestRenderTaskSchedulerLogonXMLContainsLogonTriggerAndDaemonArgs(t *testing.T) {
 	withWindowsGOOS(t)
-	baseDir := filepath.Join(t.TempDir(), "Codex Feishu Relay")
+	baseDir := filepath.Join(t.TempDir(), "Codex Feishu Link")
 	binaryPath := filepath.Join(baseDir, "bin", "codex-feishu-relay.exe")
 	state := InstallState{
 		InstanceID:        "debug",
@@ -111,7 +111,7 @@ func TestRenderTaskSchedulerLogonXMLContainsLogonTriggerAndDaemonArgs(t *testing
 
 func TestInstallTaskSchedulerLogonRegistersXMLTask(t *testing.T) {
 	withWindowsGOOS(t)
-	baseDir := filepath.Join(t.TempDir(), "Codex Feishu Relay")
+	baseDir := filepath.Join(t.TempDir(), "Codex Feishu Link")
 	state := InstallState{
 		InstanceID:        "stable",
 		BaseDir:           baseDir,
@@ -231,7 +231,7 @@ func TestTaskSchedulerLifecycleCommands(t *testing.T) {
 
 func TestRunServiceInstallUserWindowsWritesTaskState(t *testing.T) {
 	withWindowsGOOS(t)
-	baseDir := filepath.Join(t.TempDir(), "Codex Feishu Relay")
+	baseDir := filepath.Join(t.TempDir(), "Codex Feishu Link")
 	statePath := defaultInstallStatePath(baseDir)
 	state := InstallState{
 		BaseDir:           baseDir,
@@ -271,7 +271,7 @@ func TestRunServiceInstallUserWindowsWritesTaskState(t *testing.T) {
 
 func TestRunServiceWindowsLifecycleCommandsUseTaskScheduler(t *testing.T) {
 	withWindowsGOOS(t)
-	baseDir := filepath.Join(t.TempDir(), "Codex Feishu Relay")
+	baseDir := filepath.Join(t.TempDir(), "Codex Feishu Link")
 	statePath := defaultInstallStatePath(baseDir)
 	state := InstallState{
 		BaseDir:           baseDir,
@@ -334,7 +334,7 @@ func TestRunServiceWindowsLifecycleCommandsUseTaskScheduler(t *testing.T) {
 
 func TestRunServiceUninstallUserWindowsDeletesTaskAndDetachesState(t *testing.T) {
 	withWindowsGOOS(t)
-	baseDir := filepath.Join(t.TempDir(), "Codex Feishu Relay")
+	baseDir := filepath.Join(t.TempDir(), "Codex Feishu Link")
 	statePath := defaultInstallStatePath(baseDir)
 	state := InstallState{
 		BaseDir:           baseDir,

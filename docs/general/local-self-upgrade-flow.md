@@ -1,8 +1,8 @@
 # 本地自升级流程
 
 > Type: `general`
-> Updated: `2026-04-27`
-> Summary: 说明 repo 构建产物触发本地自升级时的完整时序、内嵌 upgrade shim 的释放与启动方式、与 `/upgrade dev` 的边界、自动回滚规则，以及 repo install target 与当前 daemon self target 的语义边界。
+> Updated: `2026-10-07`
+> Summary: 公开命令和产品名称统一为 Codex Feishu Link，既有安装路径与环境变量继续保持兼容。
 
 ## 1. 这份文档回答什么问题
 
@@ -12,7 +12,7 @@
 
 - `./upgrade-local.sh` 做了什么
 - `./upgrade-self.sh` 做了什么
-- `codex-feishu-relay local-upgrade` 做了什么
+- `codex-feishu-link local-upgrade` 做了什么
 - 真正负责切换 live binary 的 helper 是谁
 - helper 从哪里来，释放到哪里，怎么启动
 - 自动回滚在什么条件下触发
@@ -101,7 +101,7 @@ helper 真正切换版本时，覆盖的是这条路径。如果该路径位于 
 
 真正执行“停旧服务 -> 切换 stable binary -> 拉起新服务 -> 观察健康 -> 必要时回滚”的，是一个独立 helper 进程。
 
-这个 helper 不再复用主 `codex-feishu-relay` binary 本体，而是一个构建时内嵌在主程序里的 tiny shim。需要执行升级事务时，当前进程会把它释放到：
+这个 helper 不再复用主 `codex-feishu-link` binary 本体，而是一个构建时内嵌在主程序里的 tiny shim。需要执行升级事务时，当前进程会把它释放到：
 
 ```text
 <stateDir>/upgrade-helper/codex-feishu-relay-upgrade-shim-<timestamp>
@@ -132,7 +132,7 @@ sidecar 至少绑定当前事务对应的 `install-state.json`。这样即使当
 
 ## 4. 升级目标实例是怎么选出来的
 
-`./upgrade-local.sh` 和 `codex-feishu-relay local-upgrade` 都遵循当前的 repo install target 解析规则。
+`./upgrade-local.sh` 和 `codex-feishu-link local-upgrade` 都遵循当前的 repo install target 解析规则。
 
 这里要先区分两个概念：
 
@@ -201,7 +201,7 @@ repo 里常用的辅助解析入口是：
 脚本随后运行：
 
 ```bash
-./bin/codex-feishu-relay local-upgrade -state-path <targetStatePath>
+./bin/codex-feishu-link local-upgrade -state-path <targetStatePath>
 ```
 
 注意这里是“刚构建出的 repo binary”在执行 `local-upgrade` 子命令。
@@ -211,7 +211,7 @@ repo 里常用的辅助解析入口是：
 
 ## 6. `local-upgrade` 在内部做了什么
 
-`codex-feishu-relay local-upgrade` 本身不做 stop/start 切换。它的职责是“准备事务并拉起 helper”。
+`codex-feishu-link local-upgrade` 本身不做 stop/start 切换。它的职责是“准备事务并拉起 helper”。
 
 具体顺序如下：
 

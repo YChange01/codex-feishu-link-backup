@@ -13,7 +13,38 @@ import (
 	"github.com/YChange01/codex-feishu-link/internal/feishuapp"
 )
 
+var listFeishuAppGrantedScopes = feishu.ListAppGrantedScopes
 var listFeishuAppConfiguredScopes = feishu.ListAppConfiguredScopes
+
+func (a *App) configureFeishuPermissionObserver() {
+	if observer, ok := a.gateway.(interface {
+		SetPermissionResultHook(func(string, string, error))
+	}); ok {
+		observer.SetPermissionResultHook(a.observeFeishuPermissionResult)
+	}
+}
+
+func (a *App) observeFeishuPermissionResult(gatewayID, api string, err error) {
+	if err != nil {
+		a.observeFeishuPermissionError(gatewayID, err)
+		return
+	}
+	gatewayID, api = canonicalGatewayID(gatewayID), strings.TrimSpace(api)
+	if gatewayID == "" || api == "" {
+		return
+	}
+	a.feishuRuntime.permissionMu.Lock()
+	defer a.feishuRuntime.permissionMu.Unlock()
+	records := a.feishuRuntime.permissionGaps[gatewayID]
+	for key, record := range records {
+		if record != nil && record.LastSourceAPI == api {
+			delete(records, key)
+		}
+	}
+	if len(records) == 0 {
+		delete(a.feishuRuntime.permissionGaps, gatewayID)
+	}
+}
 
 type feishuPermissionGapRecord struct {
 	Scope           string
@@ -133,19 +164,8 @@ func (a *App) applyFeishuPermissionVerificationResult(gatewayID string, scopes [
 		return
 	}
 	now := time.Now().UTC()
-	granted := map[string]bool{}
-	for _, item := range scopes {
-		if feishuScopeStatusGranted(item) {
-			granted[feishuPermissionGapKey(item.ScopeName, item.ScopeType)] = true
-			granted[feishuPermissionGapKey(item.ScopeName, "")] = true
-		}
-	}
 	a.feishuRuntime.permissionMu.Lock()
-	defer a.feishuRuntime.permissionMu.Unlock()
 	records := a.feishuRuntime.permissionGaps[gatewayID]
-	if len(records) == 0 {
-		return
-	}
 	for key, record := range records {
 		if record == nil {
 			delete(records, key)
@@ -157,13 +177,14 @@ func (a *App) applyFeishuPermissionVerificationResult(gatewayID string, scopes [
 			record.LastVerifyError = err.Error()
 			continue
 		}
-		if granted[feishuPermissionGapKey(record.Scope, record.ScopeType)] || granted[feishuPermissionGapKey(record.Scope, "")] {
+		if _, ok := feishu.MatchScopeRequirement(record.Scope, record.ScopeType, scopes); ok {
 			delete(records, key)
 		}
 	}
 	if len(records) == 0 {
 		delete(a.feishuRuntime.permissionGaps, gatewayID)
 	}
+	a.feishuRuntime.permissionMu.Unlock()
 	if err != nil {
 		log.Printf("feishu permission verification failed: gateway=%s err=%v", gatewayID, err)
 		return
@@ -173,23 +194,13 @@ func (a *App) applyFeishuPermissionVerificationResult(gatewayID string, scopes [
 	}
 }
 
-func feishuScopeStatusGranted(status feishu.AppScopeStatus) bool {
-	status.ScopeName = strings.TrimSpace(status.ScopeName)
-	if status.ScopeName == "" {
-		return false
-	}
-	// The upstream SDK exposes grant_status without an inline enum table.
-	// Keep the auto-clear condition intentionally narrow.
-	return status.GrantStatus == 1
-}
-
 func (a *App) CheckPrimaryBotPermission(ctx context.Context, req orchestrator.PrimaryBotPermissionRequest) orchestrator.PrimaryBotPermissionDecision {
 	gatewayID := canonicalGatewayID(req.GatewayID)
 	if gatewayID == "" {
 		return orchestrator.PrimaryBotPermissionDecision{Allowed: false, Reason: "missing_gateway"}
 	}
 	if !req.ForceRefresh {
-		if facts, ok := a.FeishuBotFacts(gatewayID); ok && feishuFactsScopesFresh(facts, time.Now().UTC()) {
+		if facts, ok := a.FeishuBotFacts(gatewayID); ok && a.feishuFactsScopesFresh(facts, time.Now().UTC()) {
 			return primaryPermissionDecisionFromScopes(appScopesFromFeishuFactsScopes(facts.Scopes), nil)
 		}
 	}
@@ -214,7 +225,7 @@ func (a *App) checkFeishuScopePermission(ctx context.Context, gatewayID, feature
 		return orchestrator.PrimaryBotPermissionDecision{Allowed: false, Reason: "scope_requirement_missing"}
 	}
 	if !forceRefresh {
-		if facts, ok := a.FeishuBotFacts(gatewayID); ok && feishuFactsScopesFresh(facts, time.Now().UTC()) {
+		if facts, ok := a.FeishuBotFacts(gatewayID); ok && a.feishuFactsScopesFresh(facts, time.Now().UTC()) {
 			return feishuScopePermissionDecisionFromScopes(requirement, appScopesFromFeishuFactsScopes(facts.Scopes), nil)
 		}
 	}

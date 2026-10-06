@@ -1516,7 +1516,7 @@ function buildEnvironmentActionItems(
 }
 
 function buildSetupPageTitle(bootstrap: BootstrapState | null): string {
-  const name = bootstrap?.product.name?.trim() || "Codex Feishu Relay";
+  const name = bootstrap?.product.name?.trim() || "Codex Feishu Link";
   const version = bootstrap?.product.version?.trim();
   return version ? `${name} ${version} 安装程序` : `${name} 安装程序`;
 }

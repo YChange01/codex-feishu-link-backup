@@ -3,11 +3,13 @@ package install
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
 	"github.com/YChange01/codex-feishu-link/internal/adapter/editor"
 	"github.com/YChange01/codex-feishu-link/internal/config"
+	"github.com/YChange01/codex-feishu-link/internal/product"
 )
 
 func stubInstancePortAvailability(t *testing.T, fn func(int) bool) {
@@ -66,7 +68,7 @@ func TestBootstrapWritesConfigsAndStateWithoutLegacySettingsPatch(t *testing.T) 
 	if _, err := os.Stat(settingsPath); !os.IsNotExist(err) {
 		t.Fatalf("expected legacy settings patch to stay disabled, stat err=%v", err)
 	}
-	wantBinary := filepath.Join(installBinDir, filepath.Base(binaryPath))
+	wantBinary := filepath.Join(installBinDir, product.ExecutableName(runtime.GOOS))
 	if state.CurrentBinaryPath != wantBinary {
 		t.Fatalf("unexpected current binary path: %s", state.CurrentBinaryPath)
 	}
@@ -167,7 +169,7 @@ func TestBootstrapDebugInstanceUsesIsolatedPathsAndPorts(t *testing.T) {
 	if state.ServiceUnitPath != "" {
 		t.Fatalf("ServiceUnitPath = %q, want empty for detached bootstrap", state.ServiceUnitPath)
 	}
-	if state.CurrentBinaryPath != filepath.Join(baseDir, ".local", "share", "codex-feishu-relay-debug", "bin", "codex-feishu-relay") {
+	if state.CurrentBinaryPath != filepath.Join(baseDir, ".local", "share", "codex-feishu-relay-debug", "bin", product.ExecutableName(runtime.GOOS)) {
 		t.Fatalf("CurrentBinaryPath = %q", state.CurrentBinaryPath)
 	}
 
@@ -587,7 +589,7 @@ func TestBootstrapPreservesReleaseInstallMetadata(t *testing.T) {
 		t.Fatalf("bootstrap release metadata: %v", err)
 	}
 
-	wantBinary := filepath.Join(installBinDir, "codex-feishu-relay")
+	wantBinary := filepath.Join(installBinDir, product.ExecutableName(runtime.GOOS))
 	if state.InstallSource != InstallSourceRelease {
 		t.Fatalf("install source = %q, want release", state.InstallSource)
 	}

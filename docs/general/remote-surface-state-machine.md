@@ -1,8 +1,8 @@
 # Remote Surface 核心状态机
 
 > Type: `general`
-> Updated: `2026-10-05`
-> Summary: 共享 Codex 默认跟随桌面实时模型与强度，并在订阅、每轮开始及后台模型变化时显示确认值。
+> Updated: `2026-10-07`
+> Summary: 共享 Codex 的模型、权限与计划状态全部按显式覆盖派发，原生权限组合只作精确观察；飞书真实缺权证据独立于配置，按确认授权或实际 API 成功恢复。
 > 1. visible 但 contract mismatch 的 workspace/session 仍然可见，不会再被 `/list`、`/use`、workspace recency、target picker 直接吞掉；
 > 2. 这些 mismatch 候选不会再假装“可直接接管”；
 > 3. detached `/use`、headless exact-thread restore、workspace attach、startup resume、`/mode` backend switch、`/claudeprofile`、`/codexprofile`、`/opencodeprofile` 现在都会统一先判定 `attach visible compatible / reuse managed compatible / restart managed incompatible / fresh-start matching headless / reject`，而不是各自维护平行 continuation；
@@ -1575,6 +1575,8 @@ E0/E1(other standalone-codex-backed surface)
 
 共享桌面模式通过 `wrapper.sharedAppServer` 启用，`CODEX_FEISHU_RELAY_SHARED_APP_SERVER` 的有效布尔值覆盖持久配置。wrapper 上报 `Capabilities.SharedAppServer`；连接程序接入共享桌面 app-server。socket 不可用时，以跨进程启动锁串行执行官方 `codex app-server daemon start`，30 秒内等待就绪；锁内再次检查，以免多个机器人或 IDE 同时恢复时重复启动。已有 daemon 不重启、不停止，不启动独立 thread writer。此模式只接受 `cp_native`，能力集为 `codex-shared-native-v1`；native probe 只执行 `initialize` / `config/read`，不走独立 runtime 的启动参数覆盖、临时 `thread/start` 或 API/OAuth Profile 隔离探测。
 
+权限继承合同：共享模式的 model、reasoning、access 与 plan 均只有用户显式配置时才冻结并下发；未设置项跟随桌面原生状态。已有 thread 的观察权限不能回流为下一次发送的覆盖；新 thread 的 `thread/start` 及首个 `turn/start` 不能复制旧请求模板或注入本地默认审批/sandbox。`approvalPolicy` 与 sandbox 必须组合判断，`never + read-only`、不完整值及其它无法精确表达的组合保留原生证据，不能显示为完全访问或用于隐式提权。状态与权限菜单分别显示“观察到的权限”和“飞书覆盖”；未设置显示“跟随底层当前状态”。
+
 选中会话与连接就绪分属两个事实：route 可以保留已选择的 thread，但只有当前 proxy 的订阅结果确认后，普通远程 prompt 才能 dispatch。订阅 ready 是按 instance 保存的内存态，不写入 surface resume 持久状态。
 
 ```text
@@ -2054,6 +2056,8 @@ retained-offline overlay 额外规则：
 49. **群聊 on-demand / detached headless restore 在启动前仍可能被全局 `threads.snapshot` 拷贝到其它实例的同名 thread 误导，把恢复目标 workspace 解析成无关实例的工作区并误报 `workspace_busy` / `thread_busy`**：已修复。`mergedThreadViewForBackend` / `resolveSurfaceResumeVisibleInstance` 现在按线程真实 `CWD` 判断实例归属，忽略被快照合并改写 `WorkspaceKey` 的跨实例副本；旧实例离线后恢复会回落到 resume entry / persisted thread 的真实 workspace，再启动新的 managed headless，而不是在启动前被占用检查拦截。
 
 50. **OpenCode 切换 Profile 后仍 exact-thread 恢复旧 session，导致新实例只声明 Gemini provider/model 时，旧 DeepSeek session 在请求上游前报 `ProviderModelNotFoundError`**：已修复。Profile ID 或 revision 变化的当前 surface 与同 gateway sibling 收敛都保留 workspace、清空 continuation 的 `ThreadID` 并设置 `PrepareNewThread=true`；忙碌 sibling 的延迟收敛会从当前实例与目标 Profile/revision 的差异重新识别该语义。新实例连回后进入 `R5 NewThreadReady`，不会再把旧 session 的 provider/model 强塞进目标 overlay；单纯 `/permission` runtime relaunch 不受影响，仍可恢复原 session。
+
+51. **共享桌面会话首次从飞书发起 turn 或 `/new` 时，隐式默认值覆盖底层审批与 sandbox 权限**：已修复。共享模式只派发显式 override，未设置的字段省略；原生权限组合不能精确映射时保留原始观测并清除旧的粗粒度标签。该修复不新增输入 gate，底层审批仍经现有 request 流完成，用户可通过 `/permission` 显式选择或清除覆盖。
 
 当前审计范围内，未再发现“attach/use 成功后用户没有任何可恢复下一步”的 bug-grade 状态。
 

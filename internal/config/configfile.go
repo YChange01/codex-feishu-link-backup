@@ -13,6 +13,7 @@ import (
 	"github.com/YChange01/codex-feishu-link/internal/core/netutil"
 	"github.com/YChange01/codex-feishu-link/internal/core/relayurl"
 	"github.com/YChange01/codex-feishu-link/internal/pathscope"
+	"github.com/YChange01/codex-feishu-link/internal/product"
 	"github.com/YChange01/codex-feishu-link/internal/xutil"
 )
 
@@ -159,7 +160,7 @@ type StorageSettings struct {
 func DefaultConfigPath() string {
 	return chooseNonEmpty(
 		os.Getenv(UnifiedConfigEnvPath),
-		xdgConfigPath("codex-feishu-relay", "config.json"),
+		xdgConfigPath(product.LegacyNamespace, "config.json"),
 	)
 }
 
@@ -210,7 +211,7 @@ func LoadAppConfig() (LoadedAppConfig, error) {
 }
 
 func LoadAppConfigAtPath(targetPath string) (LoadedAppConfig, error) {
-	targetPath = chooseNonEmpty(targetPath, xdgConfigPath("codex-feishu-relay", "config.json"))
+	targetPath = chooseNonEmpty(targetPath, xdgConfigPath(product.LegacyNamespace, "config.json"))
 	return loadAppConfig(targetPath)
 }
 

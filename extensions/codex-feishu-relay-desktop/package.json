@@ -1,13 +1,13 @@
 {
   "name": "codex-feishu-relay-desktop",
-  "displayName": "Codex Feishu Relay Desktop Bridge",
+  "displayName": "Codex Feishu Link Desktop Bridge",
   "publisher": "local-codex",
   "version": "0.1.0",
   "engines": { "vscode": "^1.90.0" },
   "main": "./extension.js",
   "activationEvents": ["*"],
   "scripts": { "test": "node --test test/*.test.js" },
-  "contributes": { "configuration": { "title": "Codex Feishu Relay Desktop", "properties": {
+  "contributes": { "configuration": { "title": "Codex Feishu Link Desktop", "properties": {
     "codexRemoteDesktop.cliExecutable": { "type": "string", "scope": "application", "default": "", "description": "Trusted fixed shared Codex launcher path. Requests cannot override this path." }
   } } }
 }

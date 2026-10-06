@@ -52,7 +52,7 @@ export function makeBootstrap(
     setupRequired: rest.setupRequired ?? true,
     sshSession: rest.sshSession ?? false,
     product: {
-      name: "Codex Feishu Relay",
+      name: "Codex Feishu Link",
       version: "v1.7.0",
     },
     session: {

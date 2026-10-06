@@ -29,12 +29,12 @@ func RunInteractiveWizard(in io.Reader, out io.Writer, defaults PlatformDefaults
 		opts.BundleEntrypoint = recommendedBundleEntrypoint(defaults)
 	}
 
-	fmt.Fprintln(out, "Codex Feishu Relay 安装向导")
+	fmt.Fprintln(out, "Codex Feishu Link 安装向导")
 	fmt.Fprintln(out, "")
 	fmt.Fprintf(out, "当前平台: %s\n", defaults.GOOS)
 	fmt.Fprintln(out, "")
 	fmt.Fprintln(out, "这一步会完成：")
-	fmt.Fprintln(out, "- 安装 codex-feishu-relay 统一二进制到稳定路径")
+	fmt.Fprintln(out, "- 安装 codex-feishu-link 统一二进制到稳定路径")
 	fmt.Fprintln(out, "- 写入统一配置文件 config.json")
 	fmt.Fprintln(out, "- 按你的选择接管 VS Code")
 	fmt.Fprintln(out, "")

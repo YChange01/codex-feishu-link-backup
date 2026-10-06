@@ -13,7 +13,7 @@ import (
 
 const (
 	commandCatalogRootLabel               = "菜单首页"
-	menuHomeProductName                   = "Codex Feishu Relay"
+	menuHomeProductName                   = "Codex Feishu Link"
 	menuHomeGitHubLabel                   = "YChange01/codex-feishu-link"
 	menuHomeGitHubURL                     = "https://github.com/YChange01/codex-feishu-link"
 	menuHomeUsageGuideURL                 = "https://my.feishu.cn/docx/PTncdNBf1oS9N5xBikBcGi2enzc"

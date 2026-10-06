@@ -23,7 +23,7 @@ require_mac_toolchain() {
 
 app_path=""
 output_path=""
-volume_name="Codex Feishu Relay Installer"
+volume_name="Codex Feishu Link Installer"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -63,7 +63,7 @@ if [[ ! -d "${app_path}" ]]; then
 fi
 
 app_path="$(cd "${app_path}" && pwd)"
-staging_root="$(mktemp -d "${TMPDIR:-/tmp}/codex-feishu-relay-dmg-XXXXXX")"
+staging_root="$(mktemp -d "${TMPDIR:-/tmp}/codex-feishu-link-dmg-XXXXXX")"
 
 cleanup() {
   rm -rf "${staging_root}"

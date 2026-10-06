@@ -1753,7 +1753,7 @@ function noticeFromAutoConfigView(view?: FeishuAppAutoConfigPlanView): DetailNot
 }
 
 function buildAdminPageTitle(bootstrap: BootstrapState | null): string {
-  const name = bootstrap?.product.name?.trim() || "Codex Feishu Relay";
+  const name = bootstrap?.product.name?.trim() || "Codex Feishu Link";
   const version = bootstrap?.product.version?.trim();
   return version ? `${name} ${version} 管理` : `${name} 管理`;
 }

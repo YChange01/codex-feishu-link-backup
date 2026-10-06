@@ -50,12 +50,12 @@ describe("SetupRoute", () => {
 
     render(<SetupRoute />);
 
-    expect(await screen.findByText("Codex Feishu Relay")).toBeInTheDocument();
+    expect(await screen.findByText("Codex Feishu Link")).toBeInTheDocument();
     expect(await screen.findByRole("heading", { name: "连接飞书机器人" })).toBeInTheDocument();
     expect(screen.queryByText("当前还不能完成设置")).not.toBeInTheDocument();
     expect(screen.queryByText("环境正常")).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "本机集成" })).not.toBeInTheDocument();
-    expect(document.title).toBe("Codex Feishu Relay v1.7.0 安装程序");
+    expect(document.title).toBe("Codex Feishu Link v1.7.0 安装程序");
     await waitFor(() => {
       expect(
         calls.some((call) => call.path === "/g/demo/api/setup/feishu/onboarding/sessions"),

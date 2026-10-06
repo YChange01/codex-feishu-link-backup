@@ -47,7 +47,7 @@ final class InstallerBridge {
             let metadata = try loadMetadata()
             let binaryURL = try selectedPayloadBinaryURL()
             let resultFileURL = fileManager.temporaryDirectory
-                .appendingPathComponent("codex-feishu-relay-installer-\(UUID().uuidString)")
+                .appendingPathComponent("codex-feishu-link-installer-\(UUID().uuidString)")
                 .appendingPathExtension("ini")
 
             var arguments = [
@@ -139,9 +139,9 @@ final class InstallerBridge {
         let resourceName: String
         switch machine {
         case "arm64":
-            resourceName = "codex-feishu-relay-darwin-arm64"
+            resourceName = "codex-feishu-link-darwin-arm64"
         case "x86_64":
-            resourceName = "codex-feishu-relay-darwin-amd64"
+            resourceName = "codex-feishu-link-darwin-amd64"
         default:
             throw InstallerRuntimeError.unsupportedArchitecture(machine)
         }
@@ -204,7 +204,7 @@ final class InstallerBridge {
 
     private func extractPayloadBinary(from archiveURL: URL, resourceName: String) throws -> URL {
         let extractionRoot = fileManager.temporaryDirectory
-            .appendingPathComponent("codex-feishu-relay-installer-\(resourceName)-\(UUID().uuidString)", isDirectory: true)
+            .appendingPathComponent("codex-feishu-link-installer-\(resourceName)-\(UUID().uuidString)", isDirectory: true)
         try fileManager.createDirectory(at: extractionRoot, withIntermediateDirectories: true)
 
         let process = Process()
@@ -233,7 +233,7 @@ final class InstallerBridge {
         }
 
         for case let candidateURL as URL in enumerator {
-            guard candidateURL.lastPathComponent == "codex-feishu-relay" else {
+            guard candidateURL.lastPathComponent == "codex-feishu-link" else {
                 continue
             }
             try fileManager.setAttributes([.posixPermissions: 0o755], ofItemAtPath: candidateURL.path)
@@ -337,7 +337,7 @@ final class InstallerBridge {
         if probe.mode == "repair" {
             return "修复或升级当前安装"
         }
-        return "安装 Codex Feishu Relay"
+        return "安装 Codex Feishu Link"
     }
 
     private func primaryActionTitle(for probe: InstallerProbeResult) -> String {
@@ -356,12 +356,12 @@ final class InstallerBridge {
             let installerVersion = probe.installerVersion ?? "新版本"
             return "检测到已有安装。本次会把 \(currentVersion) 升级为 \(installerVersion)，并复用现有配置与服务语义。"
         }
-        return "这会把 Codex Feishu Relay 安装到当前用户环境，不会写入 system-wide 目录，也不会要求 root。"
+        return "这会把 Codex Feishu Link 安装到当前用户环境，不会写入 system-wide 目录，也不会要求 root。"
     }
 }
 
 private final class OutputBuffer {
-    private let queue = DispatchQueue(label: "com.kxn.codex-feishu-relay.installer.output-buffer")
+    private let queue = DispatchQueue(label: "com.kxn.codex-feishu-link.installer.output-buffer")
     private var output: String = ""
     private let onOutput: (String) -> Void
 

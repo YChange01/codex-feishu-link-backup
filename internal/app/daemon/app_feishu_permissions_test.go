@@ -1,6 +1,7 @@
 package daemon
 
 import (
+	"context"
 	"errors"
 	"testing"
 	"time"
@@ -53,6 +54,45 @@ func TestApplyFeishuPermissionVerificationResultKeepsGapOnVerifyFailure(t *testi
 	if got[0].LastVerified.IsZero() {
 		t.Fatalf("expected verify timestamp to be recorded, got %#v", got[0])
 	}
+}
+
+func TestApplyFeishuPermissionVerificationResultMatchesTokenTypeAndSatisfiers(t *testing.T) {
+	for _, tc := range []struct {
+		name, requiredScope, requiredType, grantedScope, grantedType string
+		grantStatus                                                  int
+		wantCleared                                                  bool
+	}{
+		{"user cannot clear tenant", "drive:drive", "tenant", "drive:drive", "user", 1, false},
+		{"tenant cannot clear user", "drive:drive", "user", "drive:drive", "tenant", 1, false},
+		{"ungranted cannot clear", "drive:drive", "tenant", "drive:drive", "tenant", 0, false},
+		{"unknown type cannot clear", "drive:drive", "tenant", "drive:drive", "unknown", 1, false},
+		{"satisfier clears", "im:chat:readonly", "tenant", "im:chat", "tenant", 1, true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			app := New(":0", ":0", &recordingGateway{}, serverIdentityForTest())
+			app.observeFeishuPermissionError("app-1", &feishu.APIError{
+				API: "drive.v1.file.list", Code: 99991672, Msg: "permission denied",
+				PermissionViolations: []feishu.APIErrorPermissionViolation{{Type: tc.requiredType, Subject: tc.requiredScope}},
+			})
+			app.applyFeishuPermissionVerificationResult("app-1", []feishu.AppScopeStatus{{
+				ScopeName: tc.grantedScope, ScopeType: tc.grantedType, GrantStatus: tc.grantStatus,
+			}}, nil)
+			if cleared := len(app.snapshotFeishuPermissionGaps("app-1")) == 0; cleared != tc.wantCleared {
+				t.Fatalf("cleared = %t, want %t", cleared, tc.wantCleared)
+			}
+		})
+	}
+}
+
+func TestVerifyFeishuPermissionGapsSkipsGrantQueryWithoutKnownGap(t *testing.T) {
+	app := New(":0", ":0", &recordingGateway{}, serverIdentityForTest())
+	previous := listFeishuAppGrantedScopes
+	t.Cleanup(func() { listFeishuAppGrantedScopes = previous })
+	listFeishuAppGrantedScopes = func(context.Context, feishu.LiveGatewayConfig) ([]feishu.AppScopeStatus, error) {
+		t.Fatal("no gap should require no grant query")
+		return nil, nil
+	}
+	app.verifyFeishuPermissionGaps(context.Background(), feishu.LiveGatewayConfig{GatewayID: "main"})
 }
 
 func TestApplyFeishuPermissionVerificationResultClearsBrokerPermissionBlocks(t *testing.T) {
@@ -122,7 +162,38 @@ func serverIdentityForTest() agentproto.ServerIdentity {
 
 type permissionClearingGateway struct {
 	recordingGateway
-	clearCalls []permissionClearCall
+	clearCalls           []permissionClearCall
+	permissionResultHook func(string, string, error)
+	permissionOwner      *feishu.LiveGatewayConfig
+}
+
+func (g *permissionClearingGateway) MatchesPermissionVerificationConfig(cfg feishu.LiveGatewayConfig) bool {
+	return g.permissionOwner == nil || (g.permissionOwner.AppID == cfg.AppID && g.permissionOwner.AppSecret == cfg.AppSecret && g.permissionOwner.Domain == cfg.Domain)
+}
+
+func (g *permissionClearingGateway) SetPermissionResultHook(hook func(string, string, error)) {
+	g.permissionResultHook = hook
+}
+
+func TestGatewayPermissionObserverRecordsBackgroundFailure(t *testing.T) {
+	gateway := &permissionClearingGateway{}
+	app := New(":0", ":0", gateway, serverIdentityForTest())
+	if gateway.permissionResultHook == nil {
+		t.Fatal("daemon did not register permission observer")
+	}
+	gateway.permissionResultHook("app-1", "drive.v1.file.list", &feishu.APIError{API: "drive.v1.file.list", Code: 99991672, Msg: "missing drive:drive"})
+	if gaps := app.snapshotFeishuPermissionGaps("app-1"); len(gaps) != 1 || gaps[0].Scope != "drive:drive" {
+		t.Fatalf("background permission gap = %#v", gaps)
+	}
+	gateway.permissionResultHook("other-app", "drive.v1.file.list", nil)
+	gateway.permissionResultHook("app-1", "drive.v1.file.delete", nil)
+	if len(app.snapshotFeishuPermissionGaps("app-1")) != 1 {
+		t.Fatal("unrelated API success cleared gap")
+	}
+	gateway.permissionResultHook("app-1", "drive.v1.file.list", nil)
+	if len(app.snapshotFeishuPermissionGaps("app-1")) != 0 {
+		t.Fatal("actual API success did not clear its gap")
+	}
 }
 
 type permissionClearCall struct {

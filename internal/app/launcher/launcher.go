@@ -178,19 +178,19 @@ func withDefaults(opts Options) Options {
 
 func usageText() string {
 	return `Usage:
-  codex-feishu-relay
-  codex-feishu-relay daemon [flags]
-  codex-feishu-relay install [flags]
-  codex-feishu-relay packaged-install [flags]
-  codex-feishu-relay packaged-install-probe [flags]
-  codex-feishu-relay local-upgrade [flags]
-  codex-feishu-relay service <subcommand> [flags]
-  codex-feishu-relay app-server [codex app-server args...]
-  codex-feishu-relay claude-app-server [claude app-server args...]
-  codex-feishu-relay wrapper app-server [codex app-server args...]
-  codex-feishu-relay wrapper claude-app-server [claude app-server args...]
-  codex-feishu-relay version
-  codex-feishu-relay help
+  codex-feishu-link
+  codex-feishu-link daemon [flags]
+  codex-feishu-link install [flags]
+  codex-feishu-link packaged-install [flags]
+  codex-feishu-link packaged-install-probe [flags]
+  codex-feishu-link local-upgrade [flags]
+  codex-feishu-link service <subcommand> [flags]
+  codex-feishu-link app-server [codex app-server args...]
+  codex-feishu-link claude-app-server [claude app-server args...]
+  codex-feishu-link wrapper app-server [codex app-server args...]
+  codex-feishu-link wrapper claude-app-server [claude app-server args...]
+  codex-feishu-link version
+  codex-feishu-link help
 
 Notes:
   - no arguments defaults to service mode

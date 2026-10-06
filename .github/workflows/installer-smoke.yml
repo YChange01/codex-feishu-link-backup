@@ -130,8 +130,8 @@ jobs:
         with:
           name: installer-smoke-prod-macos-input
           path: |
-            dist-production/codex-feishu-relay_*_darwin_amd64.tar.gz
-            dist-production/codex-feishu-relay_*_darwin_arm64.tar.gz
+            dist-production/codex-feishu-link_*_darwin_amd64.tar.gz
+            dist-production/codex-feishu-link_*_darwin_arm64.tar.gz
           if-no-files-found: error
 
       - name: Upload beta fixture
@@ -145,7 +145,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: installer-smoke-prod-windows-nsis
-          path: dist-production/codex-feishu-relay_0.0.0_windows_amd64_installer.exe
+          path: dist-production/codex-feishu-link_0.0.0_windows_amd64_installer.exe
           if-no-files-found: error
           compression-level: 0
 
@@ -153,7 +153,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: installer-smoke-beta-windows-nsis
-          path: dist-beta/codex-feishu-relay_0.1.0-beta.1_windows_amd64_installer.exe
+          path: dist-beta/codex-feishu-link_0.1.0-beta.1_windows_amd64_installer.exe
           if-no-files-found: error
           compression-level: 0
 
@@ -162,8 +162,8 @@ jobs:
         with:
           name: installer-smoke-beta-macos-input
           path: |
-            dist-beta/codex-feishu-relay_*_darwin_amd64.tar.gz
-            dist-beta/codex-feishu-relay_*_darwin_arm64.tar.gz
+            dist-beta/codex-feishu-link_*_darwin_amd64.tar.gz
+            dist-beta/codex-feishu-link_*_darwin_arm64.tar.gz
           if-no-files-found: error
 
   smoke-unix:
@@ -245,8 +245,8 @@ jobs:
         shell: pwsh
         run: |
           ./scripts/check/smoke-windows-nsis-installer.ps1 `
-            -ProdInstallerPath "$env:RUNNER_TEMP\installer-smoke\nsis\prod\codex-feishu-relay_0.0.0_windows_amd64_installer.exe" `
-            -BetaInstallerPath "$env:RUNNER_TEMP\installer-smoke\nsis\beta\codex-feishu-relay_0.1.0-beta.1_windows_amd64_installer.exe"
+            -ProdInstallerPath "$env:RUNNER_TEMP\installer-smoke\nsis\prod\codex-feishu-link_0.0.0_windows_amd64_installer.exe" `
+            -BetaInstallerPath "$env:RUNNER_TEMP\installer-smoke\nsis\beta\codex-feishu-link_0.1.0-beta.1_windows_amd64_installer.exe"
 
   build-macos-packaged-installer:
     needs: build-fixtures
@@ -287,8 +287,8 @@ jobs:
 
       - name: Verify packaged installer outputs
         run: |
-          prod_dmg="${RUNNER_TEMP}/installer-smoke/prod/codex-feishu-relay_0.0.0_darwin_universal_installer.dmg"
-          beta_dmg="${RUNNER_TEMP}/installer-smoke/beta/codex-feishu-relay_0.1.0-beta.1_darwin_universal_installer.dmg"
+          prod_dmg="${RUNNER_TEMP}/installer-smoke/prod/codex-feishu-link_0.0.0_darwin_universal_installer.dmg"
+          beta_dmg="${RUNNER_TEMP}/installer-smoke/beta/codex-feishu-link_0.1.0-beta.1_darwin_universal_installer.dmg"
           [[ -f "${prod_dmg}" ]]
           [[ -f "${beta_dmg}" ]]
           grep -F "$(basename "${prod_dmg}")" "${RUNNER_TEMP}/installer-smoke/prod/checksums.txt"
@@ -298,7 +298,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: installer-smoke-macos-prod-dmg
-          path: ${{ runner.temp }}/installer-smoke/prod/codex-feishu-relay_0.0.0_darwin_universal_installer.dmg
+          path: ${{ runner.temp }}/installer-smoke/prod/codex-feishu-link_0.0.0_darwin_universal_installer.dmg
           if-no-files-found: error
           compression-level: 0
 
@@ -306,6 +306,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: installer-smoke-macos-beta-dmg
-          path: ${{ runner.temp }}/installer-smoke/beta/codex-feishu-relay_0.1.0-beta.1_darwin_universal_installer.dmg
+          path: ${{ runner.temp }}/installer-smoke/beta/codex-feishu-link_0.1.0-beta.1_darwin_universal_installer.dmg
           if-no-files-found: error
           compression-level: 0

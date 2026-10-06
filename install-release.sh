@@ -14,7 +14,7 @@ usage() {
   cat <<'EOF'
 Usage: install-release.sh [options] [-- install-args...]
 
-Downloads the latest compatible Codex Feishu Relay production release package,
+Downloads the latest compatible Codex Feishu Link production release package,
 extracts it locally, bootstraps the installed binary, starts the local
 daemon, and prints the WebSetup URL.
 
@@ -23,7 +23,7 @@ Options:
   --track <name>         Install the latest release from production|beta|alpha
   --repo <owner/name>    GitHub repository to use
   --install-root <dir>   Directory used to store downloaded releases
-  --download-only        Download and extract, but do not run codex-feishu-relay install
+  --download-only        Download and extract, but do not run codex-feishu-link install
   -h, --help             Show this help
 
 Environment overrides:
@@ -154,7 +154,11 @@ download_file() {
   local output="$2"
 
   printf '  Downloading...\n' >&2
-  curl_with_localhost_bypass "${url}" -o "${output}"
+  local status
+  if ! status="$(curl_with_localhost_bypass "${url}" -o "${output}" -w '%{http_code}')"; then
+    [[ "${status}" == "404" ]] && return 44
+    return 1
+  fi
   printf '  Download complete.\n' >&2
 }
 
@@ -270,7 +274,7 @@ if [[ -z "${INSTALL_ROOT}" ]]; then
 fi
 mkdir -p "${INSTALL_ROOT}"
 
-asset_name="codex-feishu-relay_${VERSION#v}_${goos}_${goarch}.tar.gz"
+asset_name="codex-feishu-link_${VERSION#v}_${goos}_${goarch}.tar.gz"
 if [[ -z "${BASE_URL}" ]]; then
   asset_url="https://github.com/${REPO}/releases/download/${VERSION}/${asset_name}"
 else
@@ -284,15 +288,32 @@ cleanup() {
 trap cleanup EXIT
 
 archive_path="${tmp_dir}/${asset_name}"
-printf 'Installing Codex Feishu Relay %s (%s/%s)...\n' "${VERSION}" "${goos}" "${goarch}" >&2
-download_file "${asset_url}" "${archive_path}"
+printf 'Installing Codex Feishu Link %s (%s/%s)...\n' "${VERSION}" "${goos}" "${goarch}" >&2
+binary_name="codex-feishu-link"
+if download_file "${asset_url}" "${archive_path}"; then
+  :
+else
+  download_status=$?
+  [[ "${download_status}" == "44" ]] || exit "${download_status}"
+  # Only historical releases without Link assets use the legacy package.
+  legacy_asset="${asset_name/codex-feishu-link_/codex-feishu-relay_}"
+  asset_url="${asset_url%/*}/${legacy_asset}"
+  asset_name="${legacy_asset}"
+  archive_path="${tmp_dir}/${asset_name}"
+  binary_name="codex-feishu-relay"
+  download_file "${asset_url}" "${archive_path}"
+fi
 printf '  Extracting... ' >&2
 tar -xzf "${archive_path}" -C "${tmp_dir}"
 printf 'done.\n' >&2
 
-package_dir="${tmp_dir}/codex-feishu-relay_${VERSION#v}_${goos}_${goarch}"
+package_dir="${tmp_dir}/${asset_name%.tar.gz}"
 if [[ ! -d "${package_dir}" ]]; then
   echo "Downloaded archive did not contain the expected package directory." >&2
+  exit 1
+fi
+if [[ ! -x "${package_dir}/${binary_name}" ]]; then
+  echo "Downloaded package did not contain the expected executable." >&2
   exit 1
 fi
 
@@ -309,9 +330,9 @@ if [[ "${DOWNLOAD_ONLY}" == "1" || "${SKIP_SETUP}" == "1" ]]; then
   exit 0
 fi
 
-binary_path="${target_dir}/codex-feishu-relay"
+binary_path="${target_dir}/${binary_name}"
 if [[ ! -x "${binary_path}" ]]; then
-  echo "Downloaded package did not contain an executable codex-feishu-relay binary." >&2
+  echo "Downloaded package did not contain an executable codex-feishu-link binary." >&2
   exit 1
 fi
 

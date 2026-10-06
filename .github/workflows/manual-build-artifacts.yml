@@ -196,7 +196,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: internal-manual-build-macos-packaged-installer
-          path: dist/codex-feishu-relay_*_darwin_universal_installer.dmg
+          path: dist/codex-feishu-link_*_darwin_universal_installer.dmg
           if-no-files-found: error
           compression-level: 0
           retention-days: 1

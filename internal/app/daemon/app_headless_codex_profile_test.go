@@ -90,7 +90,7 @@ func TestDaemonStartsCodexHeadlessWithMigratedAPIProfileLaunchOverrides(t *testi
 	args := strings.Join(captured.Args, "\n")
 	for _, want := range []string{
 		`model_provider="codex_feishu_relay_profile_`,
-		`.name="Codex Feishu Relay API"`,
+		`.name="Codex Feishu Link API"`,
 		`.base_url="https://proxy.example/v1"`,
 		`.wire_api="responses"`,
 		`.env_key="CODEX_FEISHU_RELAY_CODEX_PROFILE_API_KEY"`,

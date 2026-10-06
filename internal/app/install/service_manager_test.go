@@ -98,7 +98,7 @@ func TestApplyStateMetadataInfersWindowsTaskSchedulerPaths(t *testing.T) {
 	serviceRuntimeGOOS = "windows"
 	defer func() { serviceRuntimeGOOS = originalGOOS }()
 
-	baseDir := filepath.Join(t.TempDir(), "Codex Feishu Relay")
+	baseDir := filepath.Join(t.TempDir(), "Codex Feishu Link")
 	state := InstallState{
 		InstanceID:     "debug",
 		BaseDir:        baseDir,

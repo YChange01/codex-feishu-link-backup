@@ -47,7 +47,7 @@ func CapabilityPreflightLaunchMaterial(baseEnv []string, codexHome string) Probe
 			"-c", codexOverride("model_reasoning_effort", capabilityProbeReasoning),
 			"-c", "model_context_window=272000",
 			"-c", "model_auto_compact_token_limit=244800",
-			"-c", codexOverride(prefix+".name", "Codex Feishu Relay Capability Probe"),
+			"-c", codexOverride(prefix+".name", "Codex Feishu Link Capability Probe"),
 			"-c", codexOverride(prefix+".base_url", "http://127.0.0.1:9/v1"),
 			"-c", codexOverride(prefix+".wire_api", "responses"),
 			"-c", codexOverride(prefix+".env_key", CodexProfileAPIKeyEnv),
@@ -135,8 +135,8 @@ func capabilityPreflightFrames(version, cwd string) []OAuthProbeFrame {
 	return []OAuthProbeFrame{
 		newOAuthProbeRequest("codex-feishu-relay-capability-initialize", "initialize", map[string]any{
 			"clientInfo": map[string]any{
-				"name":    "Codex Feishu Relay Capability Probe",
-				"title":   "Codex Feishu Relay Capability Probe",
+				"name":    "Codex Feishu Link Capability Probe",
+				"title":   "Codex Feishu Link Capability Probe",
 				"version": strings.TrimSpace(version),
 			},
 			"capabilities": map[string]any{"experimentalApi": true},

@@ -24,7 +24,7 @@ SetCompressor /SOLID lzma
 !define LANGID_ENGLISH 1033
 !define LANGID_SIMPCHINESE 2052
 
-Name "Codex Feishu Relay"
+Name "Codex Feishu Link"
 OutFile "${OUTPUT_FILE}"
 Caption "$(STR_CAPTION)"
 BrandingText "$(STR_BRANDING)"
@@ -73,10 +73,10 @@ Var TestResultOverrideFile
 Var TestAutoPrimary
 Var TestLanguage
 
-LangString STR_CAPTION ${LANGID_ENGLISH} "Codex Feishu Relay Installer"
-LangString STR_CAPTION ${LANGID_SIMPCHINESE} "Codex Feishu Relay 安装器"
-LangString STR_BRANDING ${LANGID_ENGLISH} "Codex Feishu Relay"
-LangString STR_BRANDING ${LANGID_SIMPCHINESE} "Codex Feishu Relay"
+LangString STR_CAPTION ${LANGID_ENGLISH} "Codex Feishu Link Installer"
+LangString STR_CAPTION ${LANGID_SIMPCHINESE} "Codex Feishu Link 安装器"
+LangString STR_BRANDING ${LANGID_ENGLISH} "Codex Feishu Link"
+LangString STR_BRANDING ${LANGID_SIMPCHINESE} "Codex Feishu Link"
 
 LangString STR_FINISH_TITLE_INSTALL_SETUP ${LANGID_ENGLISH} "Base installation completed"
 LangString STR_FINISH_TITLE_INSTALL_SETUP ${LANGID_SIMPCHINESE} "基础安装已完成"
@@ -91,10 +91,10 @@ LangString STR_FINISH_TITLE_REPAIR_COMPLETE ${LANGID_SIMPCHINESE} "修复完成"
 LangString STR_FINISH_TITLE_FAILURE ${LANGID_ENGLISH} "Installation failed"
 LangString STR_FINISH_TITLE_FAILURE ${LANGID_SIMPCHINESE} "安装失败"
 
-LangString STR_FINISH_SUMMARY_INSTALL_SETUP ${LANGID_ENGLISH} "Codex Feishu Relay is installed and the background service is ready. Continue with WebSetup to finish the initial configuration."
-LangString STR_FINISH_SUMMARY_INSTALL_SETUP ${LANGID_SIMPCHINESE} "Codex Feishu Relay 已完成基础安装，后台服务已就绪。继续进入 WebSetup 以完成首次配置。"
-LangString STR_FINISH_SUMMARY_INSTALL_COMPLETE ${LANGID_ENGLISH} "Codex Feishu Relay is installed and ready to use."
-LangString STR_FINISH_SUMMARY_INSTALL_COMPLETE ${LANGID_SIMPCHINESE} "Codex Feishu Relay 已安装完成，可以开始使用。"
+LangString STR_FINISH_SUMMARY_INSTALL_SETUP ${LANGID_ENGLISH} "Codex Feishu Link is installed and the background service is ready. Continue with WebSetup to finish the initial configuration."
+LangString STR_FINISH_SUMMARY_INSTALL_SETUP ${LANGID_SIMPCHINESE} "Codex Feishu Link 已完成基础安装，后台服务已就绪。继续进入 WebSetup 以完成首次配置。"
+LangString STR_FINISH_SUMMARY_INSTALL_COMPLETE ${LANGID_ENGLISH} "Codex Feishu Link is installed and ready to use."
+LangString STR_FINISH_SUMMARY_INSTALL_COMPLETE ${LANGID_SIMPCHINESE} "Codex Feishu Link 已安装完成，可以开始使用。"
 LangString STR_FINISH_SUMMARY_REINSTALL_COMPLETE ${LANGID_ENGLISH} "The current installation was reinstalled successfully."
 LangString STR_FINISH_SUMMARY_REINSTALL_COMPLETE ${LANGID_SIMPCHINESE} "当前安装已成功重装修复。"
 LangString STR_FINISH_SUMMARY_UPGRADE_COMPLETE ${LANGID_ENGLISH} "The current installation was upgraded successfully."
@@ -151,8 +151,8 @@ Section "Install"
 
   InitPluginsDir
   SetOutPath "$PLUGINSDIR\payload"
-  File /oname=codex-feishu-relay.exe "${PAYLOAD_BINARY}"
-  StrCpy $PayloadBinary "$PLUGINSDIR\payload\codex-feishu-relay.exe"
+  File /oname=codex-feishu-link.exe "${PAYLOAD_BINARY}"
+  StrCpy $PayloadBinary "$PLUGINSDIR\payload\codex-feishu-link.exe"
   StrCpy $ProbeFile "$PLUGINSDIR\packaged-install-probe.ini"
   StrCpy $ResultFile "$PLUGINSDIR\packaged-install-result.ini"
 

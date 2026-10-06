@@ -79,13 +79,14 @@ type gatewayWorker struct {
 }
 
 type MultiGatewayController struct {
-	lifecycleMu         sync.Mutex
-	mu                  sync.RWMutex
-	workers             map[string]*gatewayWorker
-	started             bool
-	startCtx            context.Context
-	actionHandler       ActionHandler
-	webPreviewPublisher previewpkg.WebPreviewPublisher
+	lifecycleMu          sync.Mutex
+	mu                   sync.RWMutex
+	workers              map[string]*gatewayWorker
+	started              bool
+	startCtx             context.Context
+	actionHandler        ActionHandler
+	webPreviewPublisher  previewpkg.WebPreviewPublisher
+	permissionResultHook func(string, string, error)
 
 	newGateway   func(GatewayAppConfig) gatewayRuntime
 	newPreviewer func(gatewayRuntime, GatewayAppConfig) gatewayPreviewRuntime
@@ -109,23 +110,33 @@ func (g *gatewayActionGate) handler(next ActionHandler) ActionHandler {
 		return next
 	}
 	return func(ctx context.Context, action control.Action) *ActionResult {
-		g.mu.Lock()
-		if g.closed {
-			g.mu.Unlock()
+		if !g.begin() {
 			return nil
 		}
-		g.active++
-		g.mu.Unlock()
-
-		defer func() {
-			g.mu.Lock()
-			g.active--
-			if g.active == 0 {
-				g.cond.Broadcast()
-			}
-			g.mu.Unlock()
-		}()
+		defer g.end()
 		return next(ctx, action)
+	}
+}
+
+func (g *gatewayActionGate) begin() bool {
+	if g == nil {
+		return false
+	}
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	if g.closed {
+		return false
+	}
+	g.active++
+	return true
+}
+
+func (g *gatewayActionGate) end() {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	g.active--
+	if g.active == 0 {
+		g.cond.Broadcast()
 	}
 }
 
@@ -171,7 +182,7 @@ func NewMultiGatewayController() *MultiGatewayController {
 		}
 		var api previewpkg.DriveAPI
 		if runtime != nil && runtime.Client() != nil {
-			api = NewLarkDrivePreviewAPI(cfg.GatewayID, runtime.Client())
+			api = newGatewayDrivePreviewAPI(cfg.GatewayID, runtime)
 		}
 		return previewpkg.NewDriveMarkdownPreviewer(
 			api,

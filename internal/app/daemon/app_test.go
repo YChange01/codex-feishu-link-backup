@@ -331,7 +331,7 @@ func TestHandleGatewayActionReplacesMenuCardForRootNavigation(t *testing.T) {
 		t.Fatalf("expected bare /menu replacement card to render menu home header, got %#v", result.ReplaceCurrentCard.CardElements)
 	}
 	rootContent, _ := result.ReplaceCurrentCard.CardElements[0]["content"].(string)
-	if !strings.Contains(rootContent, "Codex Feishu Relay · dev") ||
+	if !strings.Contains(rootContent, "Codex Feishu Link · dev") ||
 		!strings.Contains(rootContent, "GitHub: [YChange01/codex-feishu-link](https://github.com/YChange01/codex-feishu-link)") ||
 		!strings.Contains(rootContent, "使用说明：[查看文档](https://my.feishu.cn/docx/PTncdNBf1oS9N5xBikBcGi2enzc)") {
 		t.Fatalf("expected bare /menu replacement card to render menu home 3-line header, got %#v", result.ReplaceCurrentCard.CardElements[0])
@@ -1466,8 +1466,10 @@ func TestDaemonContinuesFinalReplyAfterPreviewTimeout(t *testing.T) {
 	}})
 
 	requests, previewCtxErr := previewer.snapshot()
-	if len(requests) != 1 {
-		t.Fatalf("expected one preview request, got %#v", requests)
+	// The first attempt completes synchronously; the existing second-chance
+	// retry may already have started before this snapshot is taken.
+	if len(requests) < 1 || len(requests) > 2 {
+		t.Fatalf("expected the initial preview and at most one second-chance retry, got %#v", requests)
 	}
 	if !errors.Is(previewCtxErr, context.DeadlineExceeded) {
 		t.Fatalf("expected preview timeout, got %v", previewCtxErr)

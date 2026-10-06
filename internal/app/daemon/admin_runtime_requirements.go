@@ -105,7 +105,7 @@ func buildRuntimeRequirementsResponseForLoaded(loaded config.LoadedAppConfig, cu
 			ID:      "headless_launcher",
 			Title:   "服务启动器",
 			Status:  runtimeRequirementStatusFail,
-			Summary: "当前服务没有可用的 codex-feishu-relay 二进制路径。",
+			Summary: "当前服务没有可用的 codex-feishu-link 二进制路径。",
 		})
 	} else if _, err := os.Stat(currentBinary); err != nil {
 		launcherReady = false
@@ -113,7 +113,7 @@ func buildRuntimeRequirementsResponseForLoaded(loaded config.LoadedAppConfig, cu
 			ID:      "headless_launcher",
 			Title:   "服务启动器",
 			Status:  runtimeRequirementStatusFail,
-			Summary: "当前服务记录的 codex-feishu-relay 二进制路径不可访问。",
+			Summary: "当前服务记录的 codex-feishu-link 二进制路径不可访问。",
 			Detail:  err.Error(),
 		})
 	} else {
@@ -121,7 +121,7 @@ func buildRuntimeRequirementsResponseForLoaded(loaded config.LoadedAppConfig, cu
 			ID:      "headless_launcher",
 			Title:   "服务启动器",
 			Status:  runtimeRequirementStatusPass,
-			Summary: "当前服务已经有可用的 codex-feishu-relay 启动器。",
+			Summary: "当前服务已经有可用的 codex-feishu-link 启动器。",
 			Detail:  currentBinary,
 		})
 	}
@@ -158,7 +158,7 @@ func buildRuntimeRequirementsResponseForLoaded(loaded config.LoadedAppConfig, cu
 			ID:      "binary_loop",
 			Title:   "Wrapper 启动目标",
 			Status:  runtimeRequirementStatusFail,
-			Summary: "当前 Codex 路径回指了 codex-feishu-relay 自己，会形成递归启动。",
+			Summary: "当前 Codex 路径回指了 codex-feishu-link 自己，会形成递归启动。",
 			Detail:  resolvedRealBinary,
 		})
 	} else if strings.TrimSpace(resolvedRealBinary) != "" {
@@ -166,7 +166,7 @@ func buildRuntimeRequirementsResponseForLoaded(loaded config.LoadedAppConfig, cu
 			ID:      "binary_loop",
 			Title:   "Wrapper 启动目标",
 			Status:  runtimeRequirementStatusPass,
-			Summary: "wrapper 会启动独立的真实 codex，不会回指当前 codex-feishu-relay。",
+			Summary: "wrapper 会启动独立的真实 codex，不会回指当前 codex-feishu-link。",
 		})
 	}
 	if strings.TrimSpace(resolvedClaudeBinary) == "" {

@@ -444,6 +444,13 @@ func (t *Translator) translateRequestRespond(command agentproto.Command) ([][]by
 }
 
 func (t *Translator) buildThreadStartParamsWithPolicy(cwd string, overrides agentproto.PromptOverrides, policy *agentproto.CodexResumePolicy) map[string]any {
+	if t.sharedAppServer {
+		// The desktop owns native defaults, including approval and sandbox.
+		// Only explicit remote choices may change a newly created thread.
+		params := map[string]any{"cwd": pathcanon.Native(cwd)}
+		applyPromptOverridesToThreadStart(params, overrides)
+		return params
+	}
 	params := map[string]any{}
 	if agentproto.NormalizeCodexResumePolicy(policy) == nil {
 		params = xutil.CloneMap(t.latestThreadStartParams)
@@ -471,7 +478,7 @@ func (t *Translator) directTurnStart(threadID string, command agentproto.Command
 	delete(t.pendingLocalTurnByThread, threadID)
 	t.pendingRemoteTurnByThread[threadID] = choose(command.Origin.Surface, command.Origin.ChatID)
 	template := t.selectTurnTemplate(threadID, newThread)
-	if t.sharedAppServer && !newThread {
+	if t.sharedAppServer {
 		// Other clients can change the live thread after our last observation.
 		// Never replay cached model/effort or collaboration settings into it.
 		template = map[string]any{}
@@ -482,15 +489,17 @@ func (t *Translator) directTurnStart(threadID string, command agentproto.Command
 		template["clientUserMessageId"] = agentproto.RemoteUserMessageClientPrefix + t.instanceID + ":" + command.CommandID
 	}
 	template["cwd"] = pathcanon.Native(choose(command.Target.CWD, choose(xutil.LookupStringFromAny(template["cwd"]), t.knownThreadCWD[threadID])))
-	setDefault(template, "approvalPolicy", nil)
-	setDefault(template, "sandboxPolicy", nil)
-	setDefault(template, "model", nil)
-	setDefault(template, "effort", nil)
+	if !t.sharedAppServer {
+		setDefault(template, "approvalPolicy", nil)
+		setDefault(template, "sandboxPolicy", nil)
+		setDefault(template, "model", nil)
+		setDefault(template, "effort", nil)
+		setDefault(template, "collaborationMode", nil)
+	}
 	setDefault(template, "summary", "auto")
 	setDefault(template, "personality", nil)
-	setDefault(template, "collaborationMode", nil)
 	setDefault(template, "attachments", []any{})
-	if !t.sharedAppServer || newThread {
+	if !t.sharedAppServer {
 		applyCodexResumePolicyToTurnStart(template, command.CodexResume)
 	}
 	applyPromptOverridesToTurnStart(template, command.Overrides)

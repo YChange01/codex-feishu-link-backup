@@ -207,7 +207,7 @@ func (r RuntimeResolver) resolveAPI(ref state.CodexAdmissionRef, preference stat
 	launch := SecretLaunchMaterial{
 		CLIOverrides: []string{
 			"-c", codexOverride("model_provider", providerID),
-			"-c", codexOverride(prefix+".name", "Codex Feishu Relay API"),
+			"-c", codexOverride(prefix+".name", "Codex Feishu Link API"),
 			"-c", codexOverride(prefix+".base_url", profile.BaseURL),
 			"-c", codexOverride(prefix+".wire_api", "responses"),
 			"-c", codexOverride(prefix+".env_key", CodexProfileAPIKeyEnv),

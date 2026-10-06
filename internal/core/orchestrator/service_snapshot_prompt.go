@@ -54,7 +54,7 @@ func (s *Service) resolveNextPromptSummary(inst *state.InstanceRecord, surface *
 		}
 	}
 	usesLocalRequestedOverrides := s.surfaceUsesLocalRequestedPromptOverrides(surface)
-	planModeUsesLocalRequested := surfaceUsesLocalRequestedPlanMode(settings.Contract)
+	planModeUsesLocalRequested := usesLocalRequestedOverrides || surfaceUsesLocalRequestedPlanMode(settings.Contract)
 	planModeOverrideSet := settings.PlanModeOverrideSet
 	effectivePlanMode := string(state.NormalizePlanModeSetting(settings.PlanMode))
 	overridePlanMode := effectivePlanMode
@@ -142,7 +142,7 @@ func (s *Service) resolveFrozenPromptOverride(inst *state.InstanceRecord, surfac
 		}
 		return state.ModelConfigRecord{}
 	}
-	if s.surfaceUsesLocalRequestedPromptOverrides(surface) {
+	if s.surfaceUsesLocalRequestedPromptOverrides(surface) || instanceUsesSharedCodexSettings(inst) {
 		if promptOverrideIsEmpty(override) && surface != nil {
 			override = settings.PromptOverride
 		}
@@ -153,14 +153,8 @@ func (s *Service) resolveFrozenPromptOverride(inst *state.InstanceRecord, surfac
 		requestedOverride = compactPromptOverride(settings.PromptOverride)
 	}
 	resolution := s.resolvePromptConfig(inst, surface, threadID, cwd, override)
-	model := resolution.EffectiveModel.Value
-	if inst != nil && inst.Capabilities.SharedAppServer && agentproto.NormalizeBackend(backend) == agentproto.BackendCodex {
-		// Shared threads follow the live desktop selection at dispatch time;
-		// only an explicit Feishu choice is frozen into the request.
-		model = requestedOverride.Model
-	}
 	return state.NormalizePromptOverrideForBackend(backend, state.ModelConfigRecord{
-		Model:           model,
+		Model:           resolution.EffectiveModel.Value,
 		ReasoningEffort: requestedOverride.ReasoningEffort,
 		AccessMode:      resolution.EffectiveAccessMode,
 	})
@@ -170,7 +164,14 @@ func (s *Service) surfaceUsesLocalRequestedPromptOverrides(surface *state.Surfac
 	if surface == nil {
 		return false
 	}
+	if instanceUsesSharedCodexSettings(s.root.Instances[surface.AttachedInstanceID]) {
+		return true
+	}
 	return state.IsVSCodeProductMode(state.EffectiveSurfaceCapabilitySettings(s.root, surface).Contract.ProductMode)
+}
+
+func instanceUsesSharedCodexSettings(inst *state.InstanceRecord) bool {
+	return inst != nil && inst.Capabilities.SharedAppServer && state.EffectiveInstanceBackend(inst) == agentproto.BackendCodex
 }
 
 func surfaceUsesLocalRequestedPlanMode(contract state.SurfaceBackendContract) bool {
@@ -231,7 +232,7 @@ func (s *Service) resolvePromptConfig(inst *state.InstanceRecord, surface *state
 	effectiveModel := baseModel
 	if override.Model != "" {
 		effectiveModel = configValue{Value: override.Model, Source: "surface_override"}
-	} else if effectiveModel.Value == "" {
+	} else if effectiveModel.Value == "" && !instanceUsesSharedCodexSettings(inst) {
 		if defaultValue := defaultPromptModelForBackend(backend); defaultValue != "" {
 			effectiveModel = configValue{Value: defaultValue, Source: "surface_default"}
 		}
@@ -239,21 +240,21 @@ func (s *Service) resolvePromptConfig(inst *state.InstanceRecord, surface *state
 	effectiveEffort := baseEffort
 	if override.ReasoningEffort != "" {
 		effectiveEffort = configValue{Value: override.ReasoningEffort, Source: "surface_override"}
-	} else if effectiveEffort.Value == "" {
+	} else if effectiveEffort.Value == "" && !instanceUsesSharedCodexSettings(inst) {
 		if defaultValue := defaultPromptReasoningEffortForBackend(backend); defaultValue != "" {
 			effectiveEffort = configValue{Value: defaultValue, Source: "surface_default"}
 		}
 	}
 	effectiveAccessModeSource := ""
 	effectiveAccessMode := ""
-	if state.BackendAcceptsFeishuPromptOverrides(backend) {
+	if state.BackendAcceptsFeishuPromptOverrides(backend) && !instanceUsesSharedCodexSettings(inst) {
 		effectiveAccessModeSource = "surface_default"
 		effectiveAccessMode = agentproto.AccessModeFullAccess
 	}
 	if agentproto.NormalizeAccessMode(override.AccessMode) != "" {
 		effectiveAccessMode = override.AccessMode
 		effectiveAccessModeSource = "surface_override"
-	} else if agentproto.NormalizeAccessMode(baseAccess.Value) != "" {
+	} else if agentproto.NormalizeAccessMode(baseAccess.Value) != "" && !instanceUsesSharedCodexSettings(inst) {
 		effectiveAccessMode = baseAccess.Value
 		effectiveAccessModeSource = baseAccess.Source
 	}

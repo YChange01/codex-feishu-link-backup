@@ -96,10 +96,11 @@ func (t *Translator) observeThreadSettingsUpdated(message map[string]any) Result
 		}
 	}
 	return Result{Events: []agentproto.Event{{
-		Kind:           agentproto.EventThreadSettingsUpdated,
-		ThreadID:       update.ThreadID,
-		ThreadSettings: update,
-		Metadata:       metadata,
+		Kind:               agentproto.EventThreadSettingsUpdated,
+		ThreadID:           update.ThreadID,
+		ThreadSettings:     update,
+		ObservedPermission: observedCodexPermission(settings),
+		Metadata:           metadata,
 	}}}
 }
 

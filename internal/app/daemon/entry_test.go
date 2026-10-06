@@ -37,7 +37,7 @@ func TestRuntimeGatewayAppsUsesConfigApps(t *testing.T) {
 	enabled := true
 	disabled := false
 	appConfig := config.DefaultAppConfig()
-	appConfig.Storage.PreviewRootFolderName = "Codex Feishu Relay Tests"
+	appConfig.Storage.PreviewRootFolderName = "Codex Feishu Link Tests"
 	appConfig.Feishu.Apps = []config.FeishuAppConfig{
 		{
 			ID:        "app-1",
@@ -61,7 +61,7 @@ func TestRuntimeGatewayAppsUsesConfigApps(t *testing.T) {
 	if len(apps) != 2 {
 		t.Fatalf("expected two runtime apps, got %#v", apps)
 	}
-	if apps[0].GatewayID != "app-1" || !apps[0].Enabled || apps[0].PreviewRootFolderName != "Codex Feishu Relay Tests" {
+	if apps[0].GatewayID != "app-1" || !apps[0].Enabled || apps[0].PreviewRootFolderName != "Codex Feishu Link Tests" {
 		t.Fatalf("unexpected first runtime app: %#v", apps[0])
 	}
 	if apps[1].GatewayID != "app-2" || apps[1].Enabled {

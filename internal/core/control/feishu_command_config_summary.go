@@ -126,7 +126,7 @@ func promptOverrideDisplayValue(view FeishuCatalogConfigView) string {
 		return strings.TrimSpace(view.OverrideValue)
 	}
 	if view.UsesLocalRequestedOverrides {
-		return "无（跟随 VS Code 当前状态）"
+		return "无（跟随底层当前状态）"
 	}
 	return "无"
 }

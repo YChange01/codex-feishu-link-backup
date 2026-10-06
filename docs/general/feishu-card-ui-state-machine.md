@@ -1,10 +1,12 @@
 # Feishu 卡片 UI 状态机
 
 > Type: `general`
-> Updated: `2026-10-05`
-> Summary: 共享桌面会话新增每轮模型/强度与变更提示，使用结构化只读 notice；请求设置与后台确认值分开显示。
+> Updated: `2026-10-07`
+> Summary: 共享桌面权限菜单与状态卡区分原生观察和显式覆盖，未设置项显示跟随底层状态，未知原生权限不伪装成本地预设。
 
 共享桌面模型提示使用 `shared_model_connected`、`shared_turn_model`、`shared_model_settings`、`shared_model_rerouted` 四种只读 notice。动态模型名、强度及后台原因通过 `FeishuCardTextSection` 投影为 plain text，追加到绑定会话，不携带可变更状态的 callback、不替换旧业务卡。每轮开始显示后台确认的模型和强度；未知为“未确认”；后台 reroute 展示切换前后模型和原因。飞书固定设置属于后续输入请求，单独标明。重复事件去重在 orchestrator 当前订阅内完成，quiet 仍保留这些提示。
+
+共享桌面状态与权限页消费 `UsesLocalRequestedOverrides`，未设置项显示“跟随底层当前状态”。原生审批与 sandbox 无法精确映射时展示原始组合与 `unmapped` 提示，不将其显示为完全访问。此变化不新增 callback、卡片 owner 或 modal；旧卡 freshness 与权限覆盖的显式命令入口仍使用原有校验。
 
 权限命令的规范入口为 `/permission`；`/permissions`、`/access`、`/approval` 保留为兼容别名。内部 `access` command ID、菜单 key、卡片 owner 与权限生效语义保持不变。
 
@@ -1066,6 +1068,8 @@ MCP request 卡片当前新增的可视语义：
   - 锁定 headless 主链 target picker 的 workspace 过滤、recoverable-only workspace 暴露与 VS Code path 的隔离
 
 ## 8. 审计清单
+
+2026-10-07 权限投影复审：共享模式的“未覆盖 / 显式覆盖 / 底层观测”分别展示，未知原生组合不得显示为 full access；此次不新增 callback、owner 或 UI gate。飞书 API 缺权由明确授权或冷却后真实成功解除，不把配置侧 readiness 当成恢复成功，避免反复放行与永久阻断。
 
 每次改 Feishu 卡片 UI 相关行为，提交前至少检查：
 

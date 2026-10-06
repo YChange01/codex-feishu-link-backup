@@ -467,7 +467,14 @@ func formatOverrideNotice(summary control.PromptRouteSummary, prefix string) str
 	lines := []string{prefix}
 	lines = append(lines, fmt.Sprintf("当前生效模型：%s", displayConfigValue(summary.EffectiveModel, summary.EffectiveModelSource)))
 	lines = append(lines, fmt.Sprintf("当前推理强度：%s", displayConfigValue(summary.EffectiveReasoningEffort, summary.EffectiveReasoningEffortSource)))
-	lines = append(lines, fmt.Sprintf("当前执行权限：%s", agentproto.DisplayAccessModeShort(summary.EffectiveAccessMode)))
+	accessText := agentproto.DisplayAccessModeShort(summary.EffectiveAccessMode)
+	if summary.UsesLocalRequestedOverrides {
+		accessText = "不覆盖（跟随底层当前状态）"
+		if access := agentproto.NormalizeAccessMode(summary.OverrideAccessMode); access != "" {
+			accessText = agentproto.DisplayAccessModeShort(access)
+		}
+	}
+	lines = append(lines, fmt.Sprintf("当前执行权限：%s", accessText))
 	if summary.ThreadTitle != "" {
 		lines = append(lines, fmt.Sprintf("当前输入目标：%s", summary.ThreadTitle))
 	} else if summary.CreateThread {

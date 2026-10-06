@@ -1,12 +1,12 @@
 # Configuration State Storage Guidelines
 
 > Type: `general`
-> Updated: `2026-10-06`
-> Summary: 将产品名称更新为 Codex Feishu Relay；配置状态与权限语义不变。
+> Updated: `2026-10-07`
+> Summary: 公开命令和产品名称统一为 Codex Feishu Link，既有安装路径与环境变量继续保持兼容。
 
 ## 1. 适用范围
 
-这份规范适用于所有以“参数、开关、档位、profile、provider、mode、override”形式影响 Codex Feishu Relay 行为的配置项。
+这份规范适用于所有以“参数、开关、档位、profile、provider、mode、override”形式影响 Codex Feishu Link 行为的配置项。
 
 典型入口包括：
 
@@ -27,7 +27,7 @@
 1. 只影响展示
 2. 只影响本地自动化，但有执行副作用
 3. 影响本地路由或 backend 启动合同
-4. 影响 backend 行为，且 Codex Feishu Relay 是唯一修改入口
+4. 影响 backend 行为，且 Codex Feishu Link 是唯一修改入口
 5. 影响 backend 行为，但 backend 或其他客户端也可能修改
 
 不能只根据“用户希望下次还在不在”来决定是否持久化。持久化本质上是在声明 source of truth，必须先确认这个配置是否真的应由本系统持有真相。
@@ -36,7 +36,7 @@
 
 本地用户设置得到的是 desired state。backend 上报得到的是 observed state。
 
-- desired state 表示 Codex Feishu Relay 希望后续行为是什么
+- desired state 表示 Codex Feishu Link 希望后续行为是什么
 - observed state 表示 backend 当前真实状态或历史记录是什么
 - observed state 不能无条件覆盖 desired state
 - desired state 也不能无条件压回 backend，尤其当 backend 本身允许用户或 LLM 主动改变状态时
@@ -149,13 +149,13 @@ workspace/path identity 只能通过 canonical helper 得到：
 
 设计要求：
 
-- 这类配置是 Codex Feishu Relay 的启动合同，系统应作为 SSOT
+- 这类配置是 Codex Feishu Link 的启动合同，系统应作为 SSOT
 - 如果 desired state 与 backend actual state 不一致，应进入重启、重连、重新准备或错误提示流程
 - 不应把 profile 切换混入 prompt override 语义
 
 ### 3.4 Backend Behavior With Local SSOT
 
-定义：配置会改变 backend 行为，并且确认只有 Codex Feishu Relay 一个入口会修改它；修改后 backend 会按该值持续执行。
+定义：配置会改变 backend 行为，并且确认只有 Codex Feishu Link 一个入口会修改它；修改后 backend 会按该值持续执行。
 
 建议存储：
 

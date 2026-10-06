@@ -32,7 +32,7 @@ function Get-FreePort {
 }
 
 function Current-AssetName([string]$VersionValue) {
-  return "codex-feishu-relay_{0}_windows_amd64.zip" -f $VersionValue.TrimStart("v")
+  return "codex-feishu-link_{0}_windows_amd64.zip" -f $VersionValue.TrimStart("v")
 }
 
 function Get-PythonCommand {
@@ -129,11 +129,11 @@ function Build-WindowsReleaseFixture([string]$VersionValue, [string]$TargetDir) 
   Ensure-AdminUiDist
   New-Item -ItemType Directory -Force -Path $TargetDir | Out-Null
 
-  $packageName = "codex-feishu-relay_{0}_windows_amd64" -f $VersionValue.TrimStart("v")
+  $packageName = "codex-feishu-link_{0}_windows_amd64" -f $VersionValue.TrimStart("v")
   $archivePath = Join-Path $TargetDir (Current-AssetName $VersionValue)
   $buildRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("codex-feishu-relay-release-build-" + [Guid]::NewGuid().ToString("N"))
   $stagingDir = Join-Path $buildRoot $packageName
-  $binaryPath = Join-Path $stagingDir "codex-feishu-relay.exe"
+  $binaryPath = Join-Path $stagingDir "codex-feishu-link.exe"
   $previousEnv = @{
     "CGO_ENABLED" = (Get-Item Env:CGO_ENABLED -ErrorAction SilentlyContinue).Value
     "GOOS" = (Get-Item Env:GOOS -ErrorAction SilentlyContinue).Value
@@ -149,7 +149,7 @@ function Build-WindowsReleaseFixture([string]$VersionValue, [string]$TargetDir) 
 
     Push-Location $RootDir
     try {
-      & $go build -buildvcs=false -trimpath -ldflags $ldflags -o $binaryPath ./cmd/codex-feishu-relay
+      & $go build -buildvcs=false -trimpath -ldflags $ldflags -o $binaryPath ./cmd/codex-feishu-link
       if ($LASTEXITCODE -ne 0) {
         throw "go build failed for $VersionValue"
       }
@@ -257,11 +257,11 @@ function Invoke-BootstrapState([string]$AdminUrl) {
 function Stop-CodexFeishuRelayProcesses([string]$ExecutableRoot) {
   $escapedRoot = [Regex]::Escape($ExecutableRoot)
   $stopped = @()
-  Get-CimInstance Win32_Process -Filter "Name = 'codex-feishu-relay.exe'" | ForEach-Object {
+  Get-CimInstance Win32_Process -Filter "Name = 'codex-feishu-link.exe'" | ForEach-Object {
     $execPath = $_.ExecutablePath
     $cmdLine = $_.CommandLine
     $inRoot = ($execPath -and $execPath -match "^${escapedRoot}") -or ($cmdLine -and $cmdLine -match [Regex]::Escape($ExecutableRoot))
-    Write-Host "smoke cleanup: codex-feishu-relay.exe pid=$($_.ProcessId) path=$execPath inRoot=$inRoot"
+    Write-Host "smoke cleanup: codex-feishu-link.exe pid=$($_.ProcessId) path=$execPath inRoot=$inRoot"
     if ($inRoot) {
       # /T kills the whole tree (daemon may have headless/relay children that
       # hold log handles) and /F handles processes that ignore Stop-Process.
@@ -457,7 +457,7 @@ try {
   }
 
   $expectedDir = Join-Path $installRoot $Version
-  $binaryPath = Join-Path $localAppData "codex-feishu-relay\bin\codex-feishu-relay.exe"
+  $binaryPath = Join-Path $localAppData "codex-feishu-relay\bin\codex-feishu-link.exe"
   $configPath = Join-Path $homeDir ".config\codex-feishu-relay\config.json"
   $statePath = Join-Path $homeDir ".local\share\codex-feishu-relay\install-state.json"
 
@@ -468,8 +468,8 @@ try {
     throw "installed binary missing: $binaryPath"
   }
   $releaseEntries = @(Get-ChildItem -LiteralPath $expectedDir -Force | Select-Object -ExpandProperty Name | Sort-Object)
-  if (($releaseEntries -join "|") -ne "codex-feishu-relay.exe") {
-    throw "release directory must contain only codex-feishu-relay.exe: $($releaseEntries -join ', ')"
+  if (($releaseEntries -join "|") -ne "codex-feishu-link.exe") {
+    throw "release directory must contain only codex-feishu-link.exe: $($releaseEntries -join ', ')"
   }
   if (-not (Test-Path -LiteralPath (Join-Path $installRoot "current"))) {
     throw "current release link missing"
@@ -522,7 +522,7 @@ try {
   }
 
   $betaExpectedDir = Join-Path $trackInstallRoot $BetaVersion
-  $betaBinaryPath = Join-Path $betaExpectedDir "codex-feishu-relay.exe"
+  $betaBinaryPath = Join-Path $betaExpectedDir "codex-feishu-link.exe"
   if (-not (Test-Path -LiteralPath $betaExpectedDir -PathType Container)) {
     throw "beta release directory missing: $betaExpectedDir"
   }
@@ -530,8 +530,8 @@ try {
     throw "beta binary missing: $betaBinaryPath"
   }
   $betaReleaseEntries = @(Get-ChildItem -LiteralPath $betaExpectedDir -Force | Select-Object -ExpandProperty Name | Sort-Object)
-  if (($betaReleaseEntries -join "|") -ne "codex-feishu-relay.exe") {
-    throw "beta release directory must contain only codex-feishu-relay.exe: $($betaReleaseEntries -join ', ')"
+  if (($betaReleaseEntries -join "|") -ne "codex-feishu-link.exe") {
+    throw "beta release directory must contain only codex-feishu-link.exe: $($betaReleaseEntries -join ', ')"
   }
   if (-not (Test-Path -LiteralPath (Join-Path $trackInstallRoot "current"))) {
     throw "beta current release link missing"

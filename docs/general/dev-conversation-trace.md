@@ -1,8 +1,8 @@
 # 开发态会话 Trace 日志
 
 > Type: `general`
-> Updated: `2026-04-13`
-> Summary: 说明仅开发构建可用的 conversation trace 日志位置、事件格式和复盘读取方式。
+> Updated: `2026-10-07`
+> Summary: 公开命令和产品名称统一为 Codex Feishu Link，既有安装路径与环境变量继续保持兼容。
 
 ## 1. 适用范围
 
@@ -16,7 +16,7 @@
 示例（本地开发构建）：
 
 ```bash
-go build -tags devtrace ./cmd/codex-feishu-relay
+go build -tags devtrace ./cmd/codex-feishu-link
 ```
 
 未带 `devtrace` tag 时，trace 逻辑会走空实现，不会落盘。

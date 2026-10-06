@@ -181,7 +181,7 @@ function Test-ChineseFreshInstallComplete([string]$InstallerPath) {
   Assert-Equal "zh fresh-complete action" $capture["primaryActionKind"] "finish"
   Assert-Equal "zh fresh-complete button" $capture["primaryButtonText"] "完成"
   Assert-Equal "zh fresh-complete title" $capture["titleText"] "安装完成"
-  Assert-Contains "zh fresh-complete body" $capture["bodyText"] "Codex Feishu Relay 已安装完成"
+  Assert-Contains "zh fresh-complete body" $capture["bodyText"] "Codex Feishu Link 已安装完成"
   Assert-Equal "zh fresh-complete admin shown" $capture["showAdminLink"] "true"
   Assert-Equal "zh fresh-complete logs shown" $capture["showLogsLink"] "true"
   Assert-Equal "zh admin link text" $capture["adminLinkText"] "打开 Admin UI"

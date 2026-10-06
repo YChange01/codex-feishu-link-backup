@@ -175,14 +175,14 @@ fi
 
 dist_dir="$(cd "${dist_dir}" && pwd)"
 if [[ -z "${output_app}" ]]; then
-  output_app="${dist_dir}/Install Codex Feishu Relay.app"
+  output_app="${dist_dir}/Install Codex Feishu Link.app"
 fi
 
-archive_amd64="${dist_dir}/codex-feishu-relay_${package_version_label}_darwin_amd64.tar.gz"
-archive_arm64="${dist_dir}/codex-feishu-relay_${package_version_label}_darwin_arm64.tar.gz"
+archive_amd64="${dist_dir}/codex-feishu-link_${package_version_label}_darwin_amd64.tar.gz"
+archive_arm64="${dist_dir}/codex-feishu-link_${package_version_label}_darwin_arm64.tar.gz"
 source_dir="${ROOT_DIR}/deploy/macos/InstallerApp/Sources"
 plist_template="${ROOT_DIR}/deploy/macos/InstallerApp/Info.plist.template"
-app_exec_name="Install Codex Feishu Relay"
+app_exec_name="Install Codex Feishu Link"
 
 for required in "${archive_amd64}" "${archive_arm64}" "${plist_template}"; do
   if [[ ! -f "${required}" ]]; then
@@ -191,7 +191,7 @@ for required in "${archive_amd64}" "${archive_arm64}" "${plist_template}"; do
   fi
 done
 
-build_root="$(mktemp -d "${TMPDIR:-/tmp}/codex-feishu-relay-macos-installer-XXXXXX")"
+build_root="$(mktemp -d "${TMPDIR:-/tmp}/codex-feishu-link-macos-installer-XXXXXX")"
 cleanup() {
   rm -rf "${build_root}"
 }
@@ -239,8 +239,8 @@ lipo -create \
   -output "${macos_dir}/${app_exec_name}"
 
 chmod +x "${macos_dir}/${app_exec_name}"
-cp "${archive_amd64}" "${payload_dir}/codex-feishu-relay-darwin-amd64.tar.gz"
-cp "${archive_arm64}" "${payload_dir}/codex-feishu-relay-darwin-arm64.tar.gz"
+cp "${archive_amd64}" "${payload_dir}/codex-feishu-link-darwin-amd64.tar.gz"
+cp "${archive_arm64}" "${payload_dir}/codex-feishu-link-darwin-arm64.tar.gz"
 
 bundle_version_output="$(bundle_versions_for_app "${version}")"
 app_short_version=""

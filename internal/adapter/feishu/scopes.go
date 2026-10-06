@@ -79,18 +79,42 @@ func matchScopeRequirement(requirementScope, requirementType string, configuredK
 	return "", false
 }
 
-// MatchScopeRequirement returns the configured scope that satisfies a
-// manifest requirement. It is the shared matcher for setup/admin and runtime
-// permission decisions.
+// MatchScopeRequirement returns the granted scope that satisfies a requirement,
+// including documented equivalent scopes, with the same token identity.
+// Missing token types default to tenant for legacy responses; unknown types
+// never authorize a known identity.
 func MatchScopeRequirement(requirementScope, requirementType string, configured []AppScopeStatus) (string, bool) {
+	requirementType = permissionRequirementType(requirementType)
+	if requirementType == "" {
+		return "", false
+	}
 	configuredKeys := make(map[string]bool, len(configured))
 	for _, item := range configured {
-		if !scopeGranted(item) {
+		scopeType := permissionRequirementType(item.ScopeType)
+		if !scopeGranted(item) || scopeType == "" {
 			continue
 		}
-		configuredKeys[scopeKey(item.ScopeName, item.ScopeType)] = true
+		configuredKeys[scopeKey(item.ScopeName, scopeType)] = true
 	}
 	return matchScopeRequirement(requirementScope, requirementType, configuredKeys)
+}
+
+func permissionRequirementType(value string) string {
+	switch value = normalizePermissionScopeType(value); value {
+	case "", "tenant":
+		return "tenant"
+	case "user":
+		return "user"
+	default:
+		return ""
+	}
+}
+
+// ListAppGrantedScopes reads tenant grant evidence for known runtime gaps.
+// Absence from this list does not invalidate configured scopes: self-built
+// apps may have usable scopes that this tenant-authorization API omits.
+func ListAppGrantedScopes(ctx context.Context, cfg LiveGatewayConfig) ([]AppScopeStatus, error) {
+	return NewSetupClient(SetupClientConfigFromLiveGatewayConfig(cfg)).listGrantedScopes(ctx)
 }
 
 // ListAppConfiguredScopes reads the app's configured scopes from the config
@@ -110,7 +134,7 @@ func (c *SetupClient) ListAppConfiguredScopes(ctx context.Context) ([]AppScopeSt
 		// Older self-built apps may not have application:self_manage, which
 		// makes application.get unavailable even though scope.list can still
 		// report the bot's granted scopes. Keep application.get authoritative
-		// when it works, but preserve runtime permission checks for those apps.
+		// when it works, but preserve setup inspection for those apps.
 		if scopes, fallbackErr := c.listGrantedScopes(ctx); fallbackErr == nil {
 			return scopes, nil
 		}
@@ -210,7 +234,7 @@ func scopeGranted(status AppScopeStatus) bool {
 	if status.ScopeName == "" {
 		return false
 	}
-	// The SDK exposes grant_status but does not document the enum inline.
-	// Keep the mapping narrow to avoid false-positive auto-clear.
+	// scope.list defines 1 as granted and 2 as not granted. Unknown values
+	// remain denied: https://open.feishu.cn/document/application-v6/scope/list
 	return status.GrantStatus == 1
 }

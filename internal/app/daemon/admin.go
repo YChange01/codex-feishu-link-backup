@@ -17,6 +17,7 @@ import (
 	"github.com/YChange01/codex-feishu-link/internal/config"
 	"github.com/YChange01/codex-feishu-link/internal/core/orchestrator"
 	"github.com/YChange01/codex-feishu-link/internal/core/state"
+	"github.com/YChange01/codex-feishu-link/internal/product"
 )
 
 type AdminRuntimeOptions struct {
@@ -175,6 +176,7 @@ func (a *App) registerAPIRoutes(mux *http.ServeMux) {
 	})
 
 	mux.HandleFunc("GET "+branding.LogoSVGPath, handleBrandLogoSVG)
+	mux.HandleFunc("GET "+branding.LegacyLogoSVGPath, handleBrandLogoSVG)
 	mux.Handle("GET /assets/", http.FileServerFS(adminui.FS()))
 	mux.HandleFunc("GET /", a.handleRootPage)
 	mux.HandleFunc("GET /setup", a.handleSetupPage)
@@ -584,7 +586,7 @@ func (a *App) bootstrapState(auth requestAuthState) (bootstrapStatePayload, erro
 		SetupRequired: setupRequired,
 		SSHSession:    admin.sshSession,
 		Product: bootstrapProductPayload{
-			Name:    "Codex Feishu Relay",
+			Name:    product.DisplayName,
 			Version: strings.TrimSpace(a.serverIdentity.Version),
 		},
 		Session: bootstrapSessionPayload{
@@ -725,7 +727,7 @@ func writeRootHelpPage(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
 	_, _ = fmt.Fprint(w, `<!doctype html><html><body style="font-family: sans-serif; padding: 32px;">
-<h1>Codex Feishu Relay</h1>
+<h1>Codex Feishu Link</h1>
 <p>Admin entry has moved to <a href="/admin/">/admin/</a>.</p>
 <p>Setup remains available at <a href="/setup">/setup</a>.</p>
 <p>This root page is intentionally lightweight so external access can keep separate module prefixes.</p>

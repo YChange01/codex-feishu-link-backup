@@ -139,7 +139,7 @@ package_version_label="$(resolve_package_version_label "${version}" "${package_v
 
 dist_dir="$(cd "${dist_dir}" && pwd)"
 if [[ -z "${output_path}" ]]; then
-  output_path="${dist_dir}/codex-feishu-relay_${package_version_label}_windows_amd64_installer.exe"
+  output_path="${dist_dir}/codex-feishu-link_${package_version_label}_windows_amd64_installer.exe"
 fi
 
 if [[ -z "${makensis_bin}" ]]; then
@@ -149,8 +149,8 @@ if [[ -z "${makensis_bin}" ]]; then
   fi
 fi
 
-archive_path="${dist_dir}/codex-feishu-relay_${package_version_label}_windows_amd64.zip"
-package_dir="codex-feishu-relay_${package_version_label}_windows_amd64"
+archive_path="${dist_dir}/codex-feishu-link_${package_version_label}_windows_amd64.zip"
+package_dir="codex-feishu-link_${package_version_label}_windows_amd64"
 script_path="${ROOT_DIR}/deploy/windows/codex-feishu-relay-installer.nsi"
 python_bin="$(detect_python)"
 
@@ -163,7 +163,7 @@ if [[ ! -f "${script_path}" ]]; then
   exit 1
 fi
 
-extract_root="$(mktemp -d "${TMPDIR:-/tmp}/codex-feishu-relay-nsis-XXXXXX")"
+extract_root="$(mktemp -d "${TMPDIR:-/tmp}/codex-feishu-link-nsis-XXXXXX")"
 cleanup() {
   rm -rf "${extract_root}"
 }
@@ -180,7 +180,7 @@ with zipfile.ZipFile(archive) as bundle:
     bundle.extractall(target)
 PY
 
-payload_binary="${extract_root}/${package_dir}/codex-feishu-relay.exe"
+payload_binary="${extract_root}/${package_dir}/codex-feishu-link.exe"
 if [[ ! -f "${payload_binary}" ]]; then
   echo "release payload binary not found after extraction: ${payload_binary}" >&2
   exit 1

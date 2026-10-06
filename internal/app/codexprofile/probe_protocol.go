@@ -47,8 +47,8 @@ func OAuthProbeFrames(version string) []OAuthProbeFrame {
 	return []OAuthProbeFrame{
 		newOAuthProbeRequest("codex-feishu-relay-oauth-initialize", "initialize", map[string]any{
 			"clientInfo": map[string]any{
-				"name":    "Codex Feishu Relay OAuth Probe",
-				"title":   "Codex Feishu Relay OAuth Probe",
+				"name":    "Codex Feishu Link OAuth Probe",
+				"title":   "Codex Feishu Link OAuth Probe",
 				"version": strings.TrimSpace(version),
 			},
 			"capabilities": map[string]any{"experimentalApi": true},

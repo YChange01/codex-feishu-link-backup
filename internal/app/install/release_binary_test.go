@@ -102,71 +102,79 @@ func TestEnsureReleaseBinaryFallsBackWhenRenameHitsCrossDeviceLink(t *testing.T)
 }
 
 func TestEnsureDevBinaryVerifiesChecksum(t *testing.T) {
-	version := "dev-abc123"
-	goos := runtime.GOOS
-	goarch := runtime.GOARCH
-	assetName := assetNameForVersionLabel("dev", goos, goarch)
-	packageDir := packageDirForVersionLabel("dev", goos, goarch)
-	archivePath := filepath.Join(t.TempDir(), assetName)
-	writePlatformReleaseArchive(t, archivePath, packageDir, xutil.ExecutableName(goos), "dev-binary", goos)
+	for _, productName := range []string{"codex-feishu-link", "codex-feishu-relay"} {
+		t.Run(productName, func(t *testing.T) {
+			version := "dev-abc123"
+			goos := runtime.GOOS
+			goarch := runtime.GOARCH
+			assetName := strings.Replace(assetNameForVersionLabel("dev", goos, goarch), "codex-feishu-link", productName, 1)
+			packageDir := strings.Replace(packageDirForVersionLabel("dev", goos, goarch), "codex-feishu-link", productName, 1)
+			archivePath := filepath.Join(t.TempDir(), assetName)
+			binaryName := productName
+			if goos == "windows" {
+				binaryName += ".exe"
+			}
+			writePlatformReleaseArchive(t, archivePath, packageDir, binaryName, "dev-binary", goos)
 
-	archiveRaw, err := os.ReadFile(archivePath)
-	if err != nil {
-		t.Fatalf("ReadFile archive: %v", err)
-	}
-	checksum := sha256.Sum256(archiveRaw)
+			archiveRaw, err := os.ReadFile(archivePath)
+			if err != nil {
+				t.Fatalf("ReadFile archive: %v", err)
+			}
+			checksum := sha256.Sum256(archiveRaw)
 
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if filepath.Base(r.URL.Path) != assetName {
-			http.NotFound(w, r)
-			return
-		}
-		http.ServeFile(w, r, archivePath)
-	}))
-	defer server.Close()
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if filepath.Base(r.URL.Path) != assetName {
+					http.NotFound(w, r)
+					return
+				}
+				http.ServeFile(w, r, archivePath)
+			}))
+			defer server.Close()
 
-	binaryPath, err := EnsureDevBinary(context.Background(), DevBinaryOptions{
-		Manifest: DevManifest{Version: version},
-		Asset: DevManifestAsset{
-			Name:   assetName,
-			URL:    server.URL + "/" + assetName,
-			SHA256: hex.EncodeToString(checksum[:]),
-		},
-		VersionsRoot: filepath.Join(t.TempDir(), "releases"),
-	})
-	if err != nil {
-		t.Fatalf("EnsureDevBinary: %v", err)
-	}
-	raw, err := os.ReadFile(binaryPath)
-	if err != nil {
-		t.Fatalf("ReadFile binary: %v", err)
-	}
-	if string(raw) != "dev-binary" {
-		t.Fatalf("binary contents = %q", string(raw))
-	}
+			binaryPath, err := EnsureDevBinary(context.Background(), DevBinaryOptions{
+				Manifest: DevManifest{Version: version},
+				Asset: DevManifestAsset{
+					Name:   assetName,
+					URL:    server.URL + "/" + assetName,
+					SHA256: hex.EncodeToString(checksum[:]),
+				},
+				VersionsRoot: filepath.Join(t.TempDir(), "releases"),
+			})
+			if err != nil {
+				t.Fatalf("EnsureDevBinary: %v", err)
+			}
+			raw, err := os.ReadFile(binaryPath)
+			if err != nil {
+				t.Fatalf("ReadFile binary: %v", err)
+			}
+			if string(raw) != "dev-binary" {
+				t.Fatalf("binary contents = %q", string(raw))
+			}
 
-	_, err = EnsureDevBinary(context.Background(), DevBinaryOptions{
-		Manifest: DevManifest{Version: "dev-bad"},
-		Asset: DevManifestAsset{
-			Name:   assetName,
-			URL:    server.URL + "/" + assetName,
-			SHA256: strings.Repeat("0", 64),
-		},
-		VersionsRoot: filepath.Join(t.TempDir(), "releases-bad"),
-	})
-	if err == nil || !strings.Contains(err.Error(), "checksum mismatch") {
-		t.Fatalf("EnsureDevBinary checksum error = %v, want mismatch", err)
+			_, err = EnsureDevBinary(context.Background(), DevBinaryOptions{
+				Manifest: DevManifest{Version: "dev-bad"},
+				Asset: DevManifestAsset{
+					Name:   assetName,
+					URL:    server.URL + "/" + assetName,
+					SHA256: strings.Repeat("0", 64),
+				},
+				VersionsRoot: filepath.Join(t.TempDir(), "releases-bad"),
+			})
+			if err == nil || !strings.Contains(err.Error(), "checksum mismatch") {
+				t.Fatalf("EnsureDevBinary checksum error = %v, want mismatch", err)
+			}
+		})
 	}
 }
 
 func TestReleaseAssetNameUsesZipForWindowsAndTarGzElsewhere(t *testing.T) {
-	if got := releaseAssetName("v1.2.3", "windows", "amd64"); got != "codex-feishu-relay_1.2.3_windows_amd64.zip" {
+	if got := releaseAssetName("v1.2.3", "windows", "amd64"); got != "codex-feishu-link_1.2.3_windows_amd64.zip" {
 		t.Fatalf("windows asset name = %q", got)
 	}
-	if got := releaseAssetName("v1.2.3", "linux", "amd64"); got != "codex-feishu-relay_1.2.3_linux_amd64.tar.gz" {
+	if got := releaseAssetName("v1.2.3", "linux", "amd64"); got != "codex-feishu-link_1.2.3_linux_amd64.tar.gz" {
 		t.Fatalf("linux asset name = %q", got)
 	}
-	if got := releaseAssetName("v1.2.3", "darwin", "arm64"); got != "codex-feishu-relay_1.2.3_darwin_arm64.tar.gz" {
+	if got := releaseAssetName("v1.2.3", "darwin", "arm64"); got != "codex-feishu-link_1.2.3_darwin_arm64.tar.gz" {
 		t.Fatalf("darwin asset name = %q", got)
 	}
 }

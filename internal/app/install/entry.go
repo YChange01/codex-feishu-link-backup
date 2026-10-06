@@ -35,7 +35,7 @@ func RunMain(args []string, stdin io.Reader, stdout, stderr io.Writer, version s
 	startDaemon := flagSet.Bool("start-daemon", false, "ensure the local service is running after install")
 	baseDir := flagSet.String("base-dir", "", "base directory for config and install state; empty auto-resolves to workspace binding or platform default")
 	installBinDir := flagSet.String("install-bin-dir", "", "target directory for installed binary; empty reuses existing install path or the instance default")
-	binaryPath := flagSet.String("binary", defaultBinary, "codex-feishu-relay binary source path")
+	binaryPath := flagSet.String("binary", defaultBinary, "codex-feishu-link binary source path")
 	installSource := flagSet.String("install-source", "", "install source metadata: release or repo")
 	currentTrack := flagSet.String("current-track", "", "current upgrade track metadata: production, beta, or alpha")
 	currentVersion := flagSet.String("current-version", version, "current binary version metadata")

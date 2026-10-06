@@ -1,5 +1,7 @@
 # 快速开始
 
+主命令为 `codex-feishu-link`。旧命令 `codex-feishu-relay`、既有配置和凭据目录、服务标识及 `CODEX_FEISHU_RELAY_*` 环境变量保持兼容。
+
 ## 方式一：从源码安装
 
 本仓库尚未发布二进制 Release 时，请先使用源码安装。准备 Go（见 `go.mod`）、Node.js 22.12+、npm 和已配置好的 Codex。
@@ -13,15 +15,15 @@ cd web
 npm ci
 npm run build
 cd ..
-go build -o ./bin/codex-feishu-relay ./cmd/codex-feishu-relay
-./bin/codex-feishu-relay install -bootstrap-only -start-daemon
+go build -o ./bin/codex-feishu-link ./cmd/codex-feishu-link
+./bin/codex-feishu-link install -bootstrap-only -start-daemon
 ```
 
 Windows PowerShell 的前端步骤相同，构建与安装命令为：
 
 ```powershell
-go build -o .\bin\codex-feishu-relay.exe ./cmd/codex-feishu-relay
-.\bin\codex-feishu-relay.exe install -bootstrap-only -start-daemon
+go build -o .\bin\codex-feishu-link.exe ./cmd/codex-feishu-link
+.\bin\codex-feishu-link.exe install -bootstrap-only -start-daemon
 ```
 
 ## 方式二：一条命令安装最新正式版（发布 Release 后可用）
@@ -39,7 +41,7 @@ irm https://raw.githubusercontent.com/YChange01/codex-feishu-link/main/install-r
 1. 识别当前平台
 2. 下载 GitHub 构建好的 release 包
 3. 解压到本地 release 缓存目录
-4. 安装稳定路径下的 `codex-feishu-relay`
+4. 安装稳定路径下的 `codex-feishu-link`
 5. 启动本地 daemon 并打印 WebSetup 地址
 
 如果你想固定到某个版本：
@@ -71,13 +73,13 @@ curl -fsSL https://raw.githubusercontent.com/YChange01/codex-feishu-link/main/in
 macOS / Linux：
 
 ```bash
-./codex-feishu-relay install -bootstrap-only -start-daemon
+./codex-feishu-link install -bootstrap-only -start-daemon
 ```
 
 Windows PowerShell：
 
 ```powershell
-.\codex-feishu-relay.exe install -bootstrap-only -start-daemon
+.\codex-feishu-link.exe install -bootstrap-only -start-daemon
 ```
 
 ## 在 WebSetup 里完成首次配置
@@ -99,10 +101,10 @@ daemon 启动后，打开命令输出里的 `/setup` 地址。
 如果你希望 Linux 上的 daemon 由长期运行的用户服务托管，而不是依赖 detached 进程：
 
 ```bash
-codex-feishu-relay service install-user
-codex-feishu-relay service enable
-codex-feishu-relay service start
-codex-feishu-relay service status
+codex-feishu-link service install-user
+codex-feishu-link service enable
+codex-feishu-link service start
+codex-feishu-link service status
 ```
 
 如果你希望系统重启后在没有手工打开终端的情况下也能恢复，需要额外执行：

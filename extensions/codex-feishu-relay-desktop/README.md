@@ -1,4 +1,4 @@
-# Codex Feishu Relay Desktop companion
+# Codex Feishu Link Desktop companion
 
 This local VS Code extension polls `~/.codex/feishu-desktop/requests` once per second. The broker creates this directory with mode 0700 and atomically publishes mode 0600 `<id>.json` files:
 

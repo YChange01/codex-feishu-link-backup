@@ -140,7 +140,7 @@ func CompileLaunchMaterial(input CompileInput) (LaunchMaterial, error) {
 	configRaw, err := json.Marshal(configOverlay{
 		Provider: map[string]providerOverlay{
 			providerID: {
-				Name:    "Codex Feishu Relay " + profile.Name,
+				Name:    "Codex Feishu Link " + profile.Name,
 				ID:      providerID,
 				Env:     []string{},
 				NPM:     providerNPM,

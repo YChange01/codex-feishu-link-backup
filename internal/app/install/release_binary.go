@@ -9,7 +9,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/YChange01/codex-feishu-link/internal/xutil"
 	"io"
 	"net/http"
 	"os"
@@ -17,6 +16,9 @@ import (
 	"runtime"
 	"strings"
 	"syscall"
+
+	"github.com/YChange01/codex-feishu-link/internal/product"
+	"github.com/YChange01/codex-feishu-link/internal/xutil"
 )
 
 type ReleaseBinaryOptions struct {
@@ -51,14 +53,24 @@ func EnsureReleaseBinary(ctx context.Context, opts ReleaseBinaryOptions) (string
 	if version == "" {
 		return "", fmt.Errorf("release version is required")
 	}
-	return ensureBinaryArchive(ctx, binaryArchiveOptions{
+	archive := binaryArchiveOptions{
 		AssetURL:            releaseAssetURL(opts.Repository, opts.BaseURL, version, releaseAssetName(version, runtime.GOOS, runtime.GOARCH)),
 		AssetName:           releaseAssetName(version, runtime.GOOS, runtime.GOARCH),
 		PackageVersionLabel: strings.TrimPrefix(version, "v"),
 		TargetSlot:          version,
 		VersionsRoot:        opts.VersionsRoot,
 		Client:              opts.Client,
-	})
+	}
+	binary, err := ensureBinaryArchive(ctx, archive)
+	var downloadErr *downloadHTTPError
+	if !errors.As(err, &downloadErr) || downloadErr.StatusCode != http.StatusNotFound {
+		return binary, err
+	}
+	// Historical releases only have Relay assets. Fall back solely on a missing
+	// asset; network failures, corrupt packages and checksum errors stay errors.
+	archive.AssetName = strings.Replace(archive.AssetName, product.Name+"_", product.LegacyNamespace+"_", 1)
+	archive.AssetURL = releaseAssetURL(opts.Repository, opts.BaseURL, version, archive.AssetName)
+	return ensureBinaryArchive(ctx, archive)
 }
 
 func EnsureDevBinary(ctx context.Context, opts DevBinaryOptions) (string, error) {
@@ -110,6 +122,10 @@ func ensureBinaryArchive(ctx context.Context, opts binaryArchiveOptions) (string
 	if info, err := os.Stat(targetBinary); err == nil && info.Mode().IsRegular() {
 		return targetBinary, nil
 	}
+	legacyBinary := filepath.Join(targetDir, product.LegacyExecutableName(goos))
+	if info, err := os.Stat(legacyBinary); err == nil && info.Mode().IsRegular() {
+		return legacyBinary, nil
+	}
 
 	client := opts.Client
 	if client == nil {
@@ -133,9 +149,24 @@ func ensureBinaryArchive(ctx context.Context, opts binaryArchiveOptions) (string
 		return "", err
 	}
 
-	packageDir := filepath.Join(tempDir, packageDirForVersionLabel(packageLabel, goos, goarch))
+	packageName := packageDirForVersionLabel(packageLabel, goos, goarch)
+	binaryName := product.ExecutableName(goos)
+	if strings.HasPrefix(assetName, product.LegacyNamespace+"_") {
+		packageName = strings.Replace(packageName, product.Name+"_", product.LegacyNamespace+"_", 1)
+		binaryName = product.LegacyExecutableName(goos)
+	}
+	packageDir := filepath.Join(tempDir, packageName)
 	if info, err := os.Stat(packageDir); err != nil || !info.IsDir() {
 		return "", fmt.Errorf("downloaded archive missing package directory %s", filepath.Base(packageDir))
+	}
+	sourceBinary := filepath.Join(packageDir, binaryName)
+	if info, err := os.Stat(sourceBinary); err != nil || !info.Mode().IsRegular() {
+		return "", fmt.Errorf("downloaded archive missing payload binary %s", binaryName)
+	}
+	if binaryName != product.ExecutableName(goos) {
+		if err := os.Rename(sourceBinary, filepath.Join(packageDir, product.ExecutableName(goos))); err != nil {
+			return "", err
+		}
 	}
 
 	if err := os.MkdirAll(versionsRoot, 0o755); err != nil {
@@ -159,11 +190,11 @@ func releasePackageDir(version, goos, goarch string) string {
 }
 
 func assetNameForVersionLabel(versionLabel, goos, goarch string) string {
-	return fmt.Sprintf("codex-feishu-relay_%s_%s_%s%s", versionLabel, goos, goarch, releaseArchiveSuffix(goos))
+	return packageDirForVersionLabel(versionLabel, goos, goarch) + releaseArchiveSuffix(goos)
 }
 
 func packageDirForVersionLabel(versionLabel, goos, goarch string) string {
-	return fmt.Sprintf("codex-feishu-relay_%s_%s_%s", versionLabel, goos, goarch)
+	return fmt.Sprintf("%s_%s_%s_%s", product.Name, versionLabel, goos, goarch)
 }
 
 func releaseArchiveSuffix(goos string) string {
@@ -194,6 +225,14 @@ func updateCurrentReleaseLink(versionsRoot, version string) error {
 	return os.Symlink(targetDir, currentLink)
 }
 
+type downloadHTTPError struct {
+	StatusCode int
+}
+
+func (e *downloadHTTPError) Error() string {
+	return fmt.Sprintf("download failed: http %d", e.StatusCode)
+}
+
 func downloadFile(ctx context.Context, client *http.Client, url, targetPath string) error {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
@@ -205,7 +244,7 @@ func downloadFile(ctx context.Context, client *http.Client, url, targetPath stri
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("download failed: http %d", resp.StatusCode)
+		return &downloadHTTPError{StatusCode: resp.StatusCode}
 	}
 
 	file, err := os.OpenFile(targetPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o644)

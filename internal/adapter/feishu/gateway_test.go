@@ -513,7 +513,7 @@ func TestParseMessageEventNormalizesMentionPlaceholdersInText(t *testing.T) {
 	event.Event.Message.ChatType = stringRef("group")
 	event.Event.Message.Mentions = []*larkim.MentionEvent{{
 		Key:  stringRef("@_user_1"),
-		Name: stringRef("Codex Feishu Relay"),
+		Name: stringRef("Codex Feishu Link"),
 	}}
 
 	action, ok, err := gateway.parseMessageEvent(t.Context(), event)
@@ -526,7 +526,7 @@ func TestParseMessageEventNormalizesMentionPlaceholdersInText(t *testing.T) {
 	if action.Kind != control.ActionTextMessage {
 		t.Fatalf("unexpected action kind: %#v", action)
 	}
-	if action.Text != "@Codex Feishu Relay 帮我看一下" {
+	if action.Text != "@Codex Feishu Link 帮我看一下" {
 		t.Fatalf("text = %q, want normalized mention label", action.Text)
 	}
 }
@@ -537,7 +537,7 @@ func TestPlanInboundMessageEventTreatsMentionedSlashCommandAsCommand(t *testing.
 	event.Event.Message.ChatType = stringRef("group")
 	event.Event.Message.Mentions = []*larkim.MentionEvent{{
 		Key:  stringRef("@_user_1"),
-		Name: stringRef("Codex Feishu Relay"),
+		Name: stringRef("Codex Feishu Link"),
 	}}
 
 	plan, ok, err := gateway.planInboundMessageEvent(event)

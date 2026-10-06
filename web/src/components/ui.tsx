@@ -15,7 +15,7 @@ export function BrandLockup(props: { subtitle: string; compact?: boolean }) {
     <div className={props.compact ? "brand brand-compact" : "brand"}>
       <BrandLogo className="brand-mark" />
       <div>
-        <div className="brand-name">Codex Feishu Relay</div>
+        <div className="brand-name">Codex Feishu Link</div>
         <div className="brand-sub">{props.subtitle}</div>
       </div>
     </div>

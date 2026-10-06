@@ -5,7 +5,7 @@ export function BrandLogo(props: { className?: string }) {
   return (
     <img
       className={className}
-      src={relativeLocalPath("/branding/codex-feishu-relay-logo.svg")}
+      src={relativeLocalPath("/branding/codex-feishu-link-logo.svg")}
       alt=""
       aria-hidden="true"
     />

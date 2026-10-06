@@ -95,7 +95,7 @@ func BuildEmbeddedModelCatalog(catalog EmbeddedCatalog, models []string) []byte 
 		entry := cloneRawEntry(base)
 		entry["slug"], _ = json.Marshal(model)
 		entry["display_name"], _ = json.Marshal(model)
-		entry["description"], _ = json.Marshal("Model provided by Codex Feishu Relay profile.")
+		entry["description"], _ = json.Marshal("Model provided by Codex Feishu Link profile.")
 		entry["priority"], _ = json.Marshal(100)
 		modelsOut = append(modelsOut, entry)
 	}

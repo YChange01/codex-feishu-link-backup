@@ -1,8 +1,8 @@
 # 架构
 
 > Type: `general`
-> Updated: `2026-07-31`
-> Summary: 对齐当前统一二进制入口、兼容 launcher 与实际目录结构，并补充 daemon 作为组合根的 runtime owner 收口、durable JSON store 的统一 fail-closed load policy、Feishu room primary 的 daemon snapshot 热路径、Feishu gateway 级 bot capability 单写源与 surface 执行投影、Feishu adapter 的 controller/gateway/projector/preview 边界、Feishu surface identity 与 ordinary inbound planner 的单一实现、gateway-local FIFO lane、orchestrator service-owned UI/runtime cluster、`control.Action` 的 request / owner-flow family 收口、`UIEvent` 的 view-kind 命名、daemon 本地 Feishu tool listener 的 MCP-native streamable HTTP 协议面、current-surface 显式图片/文件投递 contract，以及 editor 侧共享 VS Code bundle entrypoint 探测边界。
+> Updated: `2026-10-07`
+> Summary: 分离 Link 公开产品身份与安装兼容命名空间，明确共享桌面权限继承、飞书已配置权限与实际授权的所有权边界及发布兼容链。
 
 ## 1. 当前状态
 
@@ -14,16 +14,17 @@
 
 当前产品入口已经收敛到统一二进制：
 
-1. `codex-feishu-relay`
+1. `codex-feishu-link`
    - 无参数时默认进入 `daemon` role
    - `install` role 负责 bootstrap、写配置和启动 WebSetup
    - `app-server` / `wrapper` role 负责包装真实 `codex`
 
-仓库里仍保留三个兼容 launcher：
+仓库里仍保留四个兼容 launcher：
 
 1. `relayd`
 2. `relay-wrapper`
 3. `relay-install`
+4. `codex-feishu-relay`
 
 它们都只是对同一套 `launcher` 的兼容入口，不再是 release 用户的主产品入口。
 
@@ -41,7 +42,8 @@
 
 ```text
 cmd/
-  codex-feishu-relay/
+  codex-feishu-link/
+  codex-feishu-relay/  # 旧命令兼容
   relayd/
   relay-wrapper/
   relay-install/
@@ -340,6 +342,24 @@ wrapper 当前不再直接依赖 `app/install`；如果需要探测 VS Code exte
 
 Feishu projector 只消费 `UIEvent`，不直接理解 app-server 原生协议。
 
+### 5.4 产品身份与安装兼容边界
+
+`internal/product` 统一运行身份与安装命名：`Name=codex-feishu-link`、`DisplayName=Codex Feishu Link`。`xutil.ExecutableName` 委托该包；daemon、wrapper、launcher 使用同一公开身份。
+
+品牌、命令、存储命名空间不再复用同一个字符串。`LegacyNamespace=codex-feishu-relay` 专用于既有配置、数据、状态目录与服务标识。现有环境变量、MCP key、消息来源标记、shim sidecar、VS Code 扩展 ID 和安装目标绑定继续保持兼容合同；不通过搬移目录、复制密钥或重新安装服务完成品牌更名。
+
+运行身份接收 Link 与旧 Relay 名称，仍必须通过原有 build fingerprint/version 校验，未知产品继续拒绝。新发行产物使用 Link 命名，并同时生成内容相同、目录及二进制名符合旧升级器预期的 Relay 兼容包。新升级器和在线安装脚本仅在新资产返回 HTTP 404 时尝试旧资产；网络错误、校验失败和损坏的包保持失败。已缓存旧版本仍可被用于回滚。安装同时刷新新旧两个命令，install-state 记录 Link 主入口；过渡期 dev manifest 继续指向 Relay 兼容包，以适配不能识别新目录布局的旧 dev updater。
+
+### 5.5 三种权限事实的所有权
+
+- 原生线程权限：Codex app-server 持有 `approvalPolicy` 与 sandbox 的真实组合；它们是独立维度。adapter 只对精确可表示的组合生成本地权限预设，未知或不等价组合保留原生证据并标为 `unmapped`。
+- 飞书请求覆盖：orchestrator 持有用户显式选择的覆盖。共享桌面模式对 model、reasoning、access、plan 未设置项不下发值；创建 thread、订阅、首次发送和后续发送均不回放其它线程模板权限，也不把未知权限默认为 `full_access`。观察事实只用于展示，不能反写成授权。
+- 飞书应用权限：配置侧 `application.get` 仍用于 setup 与日常能力检查，并保留历史自建应用的 fallback。已发生的真实 API 拒绝是独立缺权证据，不能被“配置里存在 scope”清除；有缺口时单独查询租户授权，只使用明确肯定的 grant 清除对应阻断。`scope.list` 缺失项不反向否定扫码/自建应用的配置能力；该接口定义的是[租户授权状态](https://open.feishu.cn/document/application-v6/scope/list)，不能充当所有应用的完整能力清单。同名 user scope 不能满足 tenant scope，未知身份和查询失败不能清除缺权状态。
+
+Drive preview 与 LiveGateway 共用同一个调用 broker。Drive SDK 的业务错误在 broker callback 内产生，真实缺权向 daemon 记录；重复同 API 请求在现有 cooldown 中短路。肯定授权结果或 cooldown 后同 API 的真实成功才能清理已观测缺口。controller 核对 runtime 身份与 worker generation，并复用既有 action gate 排空已准入的权限回调，通知在锁外完成。授权查询在网络请求结束后重新核对配置与实际 worker 的应用身份、凭据和域名，再与 runtime 替换串行应用结果。若生命周期正在变更，本次验证结果直接舍弃并保留缺口，后续刷新或真实 API 重试仍可恢复；不能让 gate 内的刷新反向等待正在排空该 gate 的生命周期锁。启动前缓存必须重新确认，避免重启直接采用旧权限事实。
+
+当前架构继续保留 wrapper / orchestrator / Feishu adapter 三层。此次重构收口的是跨层事实来源，而不是增加平行状态中心。配置/凭据、审批策略和 UI 展示分别由上述 owner 管理。
+
 ## 6. 关键运行流
 
 ### 6.1 远端 prompt
@@ -395,7 +415,6 @@ HTTP /v1/status
 - 对外公开 control/render 协议
 - 多 agent 统一插件系统
 - block update/replace
-- 远端 `turn.steer`
 - 复杂的进程托管器抽象
 
 这些可以以后再做，但不应影响现有三层边界。

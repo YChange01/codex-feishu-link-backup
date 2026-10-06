@@ -19,7 +19,7 @@ test:
 build:
 	bash scripts/web/build-admin-ui.sh
 	bash scripts/externalaccess/prepare-cloudflared-embed.sh
-	$(GO) build ./cmd/codex-feishu-relay
+	$(GO) build ./cmd/codex-feishu-link
 	$(GO) build ./cmd/relayd
 	$(GO) build ./cmd/relay-wrapper
 	$(GO) build ./cmd/relay-install
@@ -46,12 +46,12 @@ release-track-version:
 start:
 	bash scripts/externalaccess/prepare-cloudflared-embed.sh
 	mkdir -p bin
-	$(GO) build -o ./bin/codex-feishu-relay ./cmd/codex-feishu-relay
-	./bin/codex-feishu-relay install -bootstrap-only -start-daemon
+	$(GO) build -o ./bin/codex-feishu-link ./cmd/codex-feishu-link
+	./bin/codex-feishu-link install -bootstrap-only -start-daemon
 
 stop:
 	@echo "No repo-local stop helper is provided." >&2
-	@echo "Stop the codex-feishu-relay daemon process directly, e.g.:" >&2
+	@echo "Stop the codex-feishu-link daemon process directly, e.g.:" >&2
 	@echo "  curl -X POST http://127.0.0.1:9501/v1/stop" >&2
 	@echo "Or send SIGINT/SIGTERM to the daemon process manually." >&2
 	@exit 1

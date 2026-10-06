@@ -16,7 +16,7 @@ function Show-Usage {
   @'
 Usage: install-release.ps1 [options] [-InstallArgs <args...>]
 
-Downloads the latest compatible Codex Feishu Relay production release package,
+Downloads the latest compatible Codex Feishu Link production release package,
 extracts it locally, bootstraps the installed binary, starts the local
 daemon, and prints the WebSetup URL.
 
@@ -25,7 +25,7 @@ Options:
   -Track <name>           Install the latest release from production|beta|alpha
   -Repo <owner/name>      GitHub repository to use
   -InstallRoot <dir>      Directory used to store downloaded releases
-  -DownloadOnly           Download and extract, but do not run codex-feishu-relay install
+  -DownloadOnly           Download and extract, but do not run codex-feishu-link install
   -Help                   Show this help
 
 Environment overrides:
@@ -172,7 +172,12 @@ function Invoke-HttpRequest([string]$Url) {
   Add-AuthHeader $request
 
   $response = $client.SendAsync($request).GetAwaiter().GetResult()
-  [void]$response.EnsureSuccessStatusCode()
+  if (-not $response.IsSuccessStatusCode) {
+    $downloadError = New-Object System.Net.Http.HttpRequestException -ArgumentList ("download failed: http {0}" -f [int]$response.StatusCode)
+    $downloadError.Data["StatusCode"] = [int]$response.StatusCode
+    $response.Dispose()
+    throw $downloadError
+  }
   return $response
 }
 
@@ -335,7 +340,7 @@ if ([string]::IsNullOrWhiteSpace($Version)) {
 $Version = Normalize-Version $Version
 New-Item -ItemType Directory -Force -Path $InstallRoot | Out-Null
 
-$assetName = "codex-feishu-relay_{0}_windows_{1}.zip" -f $Version.TrimStart("v"), $goarch
+$assetName = "codex-feishu-link_{0}_windows_{1}.zip" -f $Version.TrimStart("v"), $goarch
 if ([string]::IsNullOrWhiteSpace($BaseUrl)) {
   $assetUrl = "https://github.com/$Repo/releases/download/$Version/$assetName"
 } else {
@@ -346,15 +351,29 @@ $tmpDir = Join-Path ([System.IO.Path]::GetTempPath()) ("codex-feishu-relay-insta
 New-Item -ItemType Directory -Force -Path $tmpDir | Out-Null
 try {
   $archivePath = Join-Path $tmpDir $assetName
-  Write-Host "Installing Codex Feishu Relay $Version (windows/$goarch)..."
-  Invoke-DownloadRequest $assetUrl $archivePath
+  Write-Host "Installing Codex Feishu Link $Version (windows/$goarch)..."
+  $binaryName = "codex-feishu-link.exe"
+  try {
+    Invoke-DownloadRequest $assetUrl $archivePath
+  } catch {
+    if ($_.Exception.Data["StatusCode"] -ne 404) { throw }
+    $legacyAsset = $assetName.Replace("codex-feishu-link_", "codex-feishu-relay_")
+    $assetUrl = $assetUrl.Substring(0, $assetUrl.LastIndexOf('/') + 1) + $legacyAsset
+    $assetName = $legacyAsset
+    $archivePath = Join-Path $tmpDir $assetName
+    $binaryName = "codex-feishu-relay.exe"
+    Invoke-DownloadRequest $assetUrl $archivePath
+  }
   Write-Host "  Extracting... " -NoNewline
   Expand-Archive -Path $archivePath -DestinationPath $tmpDir -Force
   Write-Host "done."
 
-  $packageDir = Join-Path $tmpDir ("codex-feishu-relay_{0}_windows_{1}" -f $Version.TrimStart("v"), $goarch)
+  $packageDir = Join-Path $tmpDir ([System.IO.Path]::GetFileNameWithoutExtension($assetName))
   if (-not (Test-Path -LiteralPath $packageDir -PathType Container)) {
     throw "Downloaded archive did not contain the expected package directory."
+  }
+  if (-not (Test-Path -LiteralPath (Join-Path $packageDir $binaryName) -PathType Leaf)) {
+    throw "Downloaded package did not contain the expected executable."
   }
 
   $targetDir = Join-Path $InstallRoot $Version
@@ -371,9 +390,9 @@ try {
     return
   }
 
-  $binaryPath = Join-Path $targetDir "codex-feishu-relay.exe"
+  $binaryPath = Join-Path $targetDir $binaryName
   if (-not (Test-Path -LiteralPath $binaryPath -PathType Leaf)) {
-    throw "Downloaded package did not contain an executable codex-feishu-relay binary."
+    throw "Downloaded package did not contain an executable codex-feishu-link binary."
   }
 
   & $binaryPath install `
@@ -387,7 +406,7 @@ try {
     -start-daemon `
     @InstallArgs
   if ($LASTEXITCODE -ne 0) {
-    throw "codex-feishu-relay install failed with exit code $LASTEXITCODE."
+    throw "codex-feishu-link install failed with exit code $LASTEXITCODE."
   }
 } finally {
   if (Test-Path -LiteralPath $tmpDir) {

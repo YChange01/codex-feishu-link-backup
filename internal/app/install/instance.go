@@ -5,12 +5,14 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/YChange01/codex-feishu-link/internal/product"
 )
 
 const (
 	defaultInstanceID = "stable"
 	debugInstanceID   = "debug"
-	productName       = "codex-feishu-relay"
+	productName       = product.LegacyNamespace
 )
 
 var instanceIDPattern = regexp.MustCompile(`^[a-z0-9](?:[a-z0-9._-]{0,61}[a-z0-9])?$`)

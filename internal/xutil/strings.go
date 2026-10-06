@@ -4,6 +4,8 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/YChange01/codex-feishu-link/internal/product"
 )
 
 // BoolString renders value as "true" or "false", consolidating the copies
@@ -38,14 +40,11 @@ func MetadataString(metadata map[string]any, key string) string {
 }
 
 // ExecutableName returns the product binary name for the given GOOS value
-// ("codex-feishu-relay.exe" on windows, "codex-feishu-relay" otherwise). It consolidates
+// ("codex-feishu-link.exe" on windows, "codex-feishu-link" otherwise). It consolidates
 // the executableName copies previously living in install/entry.go and
 // installshim/shim.go.
 func ExecutableName(goos string) string {
-	if goos == "windows" {
-		return "codex-feishu-relay.exe"
-	}
-	return "codex-feishu-relay"
+	return product.ExecutableName(goos)
 }
 
 // EnsureWindowsExecutable returns name with a .exe suffix on windows, or name

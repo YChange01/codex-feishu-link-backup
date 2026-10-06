@@ -9,7 +9,8 @@ import (
 
 func configObservedEvents(threadID, cwd string, params map[string]any, treatAsDefault bool) []agentproto.Event {
 	model, effort, access, planMode := extractObservedConfig(params)
-	if model == "" && effort == "" && access == "" && planMode == "" {
+	permission := observedCodexPermission(params)
+	if model == "" && effort == "" && access == "" && planMode == "" && permission == nil {
 		return nil
 	}
 	scope := "thread"
@@ -17,14 +18,15 @@ func configObservedEvents(threadID, cwd string, params map[string]any, treatAsDe
 		scope = "cwd_default"
 	}
 	return []agentproto.Event{{
-		Kind:            agentproto.EventConfigObserved,
-		ThreadID:        threadID,
-		CWD:             cwd,
-		Model:           model,
-		ReasoningEffort: effort,
-		AccessMode:      access,
-		PlanMode:        planMode,
-		ConfigScope:     scope,
+		Kind:               agentproto.EventConfigObserved,
+		ThreadID:           threadID,
+		CWD:                cwd,
+		Model:              model,
+		ReasoningEffort:    effort,
+		AccessMode:         access,
+		ObservedPermission: permission,
+		PlanMode:           planMode,
+		ConfigScope:        scope,
 	}}
 }
 
@@ -40,24 +42,11 @@ func extractObservedConfig(params map[string]any) (model, effort, access, planMo
 		lookupString(params, "config", "reasoning_effort"),
 		xutil.LookupStringFromAny(params["effort"]),
 	)
-	access = chooseObservedAccessMode(
-		xutil.LookupStringFromAny(params["approvalPolicy"]),
-		xutil.LookupStringFromAny(params["sandbox"]),
-		lookupString(params, "sandboxPolicy", "type"),
-		lookupString(params, "config", "approval_policy"),
-		lookupString(params, "config", "sandbox"),
-	)
+	if permission := observedCodexPermission(params); permission != nil {
+		access = permission.ProjectedAccessMode
+	}
 	planMode = normalizeObservedPlanMode(lookupString(params, "collaborationMode", "mode"))
 	return model, effort, access, planMode
-}
-
-func chooseObservedAccessMode(values ...string) string {
-	for _, value := range values {
-		if normalized := agentproto.NormalizeAccessMode(value); normalized != "" {
-			return normalized
-		}
-	}
-	return ""
 }
 
 func applyPromptOverridesToThreadStart(params map[string]any, overrides agentproto.PromptOverrides) {

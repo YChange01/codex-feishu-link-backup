@@ -115,7 +115,7 @@ resolve_build_jobs() {
 build_platform_archive() {
   local goos="$1"
   local goarch="$2"
-  local package_name="codex-feishu-relay_${package_version_label}_${goos}_${goarch}"
+  local package_name="codex-feishu-link_${package_version_label}_${goos}_${goarch}"
   local work_dir="${work_root}/${goos}-${goarch}"
   local staging_dir="${work_dir}/${package_name}"
   local archive_path=""
@@ -135,7 +135,7 @@ build_platform_archive() {
 
   CGO_ENABLED=0 GOOS="${goos}" GOARCH="${goarch}" \
     go build -trimpath -ldflags "-s -w -X main.version=${version} -X main.branch=${build_branch} -X github.com/YChange01/codex-feishu-link/internal/buildinfo.FlavorValue=${build_flavor}" \
-    -o "${staging_dir}/codex-feishu-relay${extension}" ./cmd/codex-feishu-relay
+    -o "${staging_dir}/codex-feishu-link${extension}" ./cmd/codex-feishu-link
 
   if [[ "${goos}" == "windows" ]]; then
     archive_path="${output_dir}/${package_name}.zip"
@@ -145,10 +145,24 @@ build_platform_archive() {
     )
   else
     archive_path="${output_dir}/${package_name}.tar.gz"
-    tar -C "${work_dir}" -czf "${archive_path}" "${package_name}"
+    COPYFILE_DISABLE=1 tar -C "${work_dir}" -czf "${archive_path}" "${package_name}"
   fi
 
-  verify_platform_archive_contents "${archive_path}" "${package_name}" "codex-feishu-relay${extension}"
+  verify_platform_archive_contents "${archive_path}" "${package_name}" "codex-feishu-link${extension}"
+
+  # Installed Relay updaters request the old asset name, package directory and
+  # executable. Publish the same payload in that layout during the transition.
+  local legacy_package="codex-feishu-relay_${package_version_label}_${goos}_${goarch}"
+  mkdir -p "${work_dir}/${legacy_package}"
+  cp "${staging_dir}/codex-feishu-link${extension}" "${work_dir}/${legacy_package}/codex-feishu-relay${extension}"
+  if [[ "${goos}" == "windows" ]]; then
+    local legacy_archive="${output_dir}/${legacy_package}.zip"
+    (cd "${work_dir}" && zip -qr "${legacy_archive}" "${legacy_package}")
+  else
+    local legacy_archive="${output_dir}/${legacy_package}.tar.gz"
+    COPYFILE_DISABLE=1 tar -C "${work_dir}" -czf "${legacy_archive}" "${legacy_package}"
+  fi
+  verify_platform_archive_contents "${legacy_archive}" "${legacy_package}" "codex-feishu-relay${extension}"
   rm -rf "${work_dir}"
   echo "finished ${goos}/${goarch}: ${archive_path}"
 }
@@ -175,7 +189,15 @@ PY
 )"
       ;;
     *.tar.gz)
-      listing="$(tar -tzf "${archive_path}" | sort)"
+      listing="$(python3 - "${archive_path}" <<'PY'
+import sys
+import tarfile
+
+with tarfile.open(sys.argv[1]) as archive:
+    for member in sorted(archive.getmembers(), key=lambda item: item.name):
+        print(member.name.rstrip("/") + ("/" if member.isdir() else ""))
+PY
+)"
       ;;
     *)
       echo "unsupported archive format for content check: ${archive_path}" >&2

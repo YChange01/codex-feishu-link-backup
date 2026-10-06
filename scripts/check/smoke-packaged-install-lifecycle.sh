@@ -42,7 +42,7 @@ detect_goarch() {
 
 asset_name() {
   local version="$1"
-  printf 'codex-feishu-relay_%s_%s_%s.tar.gz\n' "${version#v}" "$(detect_goos)" "$(detect_goarch)"
+  printf 'codex-feishu-link_%s_%s_%s.tar.gz\n' "${version#v}" "$(detect_goos)" "$(detect_goarch)"
 }
 
 free_port() {
@@ -65,8 +65,8 @@ extract_binary() {
   mkdir -p "${output_dir}"
   tar -xzf "${dist_dir}/${asset}" -C "${output_dir}"
   local binary
-  binary="$(find "${output_dir}" -type f -name codex-feishu-relay -perm -111 | head -n1 || true)"
-  [[ -n "${binary}" ]] || fail "codex-feishu-relay binary not found after extracting ${asset}"
+  binary="$(find "${output_dir}" -type f -name codex-feishu-link -perm -111 | head -n1 || true)"
+  [[ -n "${binary}" ]] || fail "codex-feishu-link binary not found after extracting ${asset}"
   printf '%s\n' "${binary}"
 }
 
@@ -137,7 +137,7 @@ daemon_pid=""
 cleanup() {
   local status=$?
   if [[ -z "${daemon_pid}" && -n "${install_bin_dir:-}" ]]; then
-    daemon_pid="$(ps -eo pid=,args= | awk -v target="${install_bin_dir}/codex-feishu-relay daemon" '$0 ~ target && !f {f=1; print $1}')"
+    daemon_pid="$(ps -eo pid=,args= | awk -v target="${install_bin_dir}/codex-feishu-link daemon" '$0 ~ target && !f {f=1; print $1}')"
   fi
   if [[ -n "${daemon_pid}" ]]; then
     kill "${daemon_pid}" 2>/dev/null || true
@@ -211,7 +211,7 @@ HOME="${base_dir}" "${prod_binary}" packaged-install \
   -format json \
   -result-file "${result_dir}/first-install.ini" > "${result_dir}/first-install.json"
 
-live_binary="${install_bin_dir}/codex-feishu-relay"
+live_binary="${install_bin_dir}/codex-feishu-link"
 [[ -x "${live_binary}" ]] || fail "live binary missing after first install: ${live_binary}"
 [[ -f "${state_path}" ]] || fail "install state missing after first install: ${state_path}"
 [[ -f "${plist_path}" ]] || fail "launchd plist missing after first install: ${plist_path}"

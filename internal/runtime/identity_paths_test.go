@@ -22,8 +22,8 @@ func TestBinaryIdentityHelpersAndPersistence(t *testing.T) {
 	if err != nil {
 		t.Fatalf("BinaryIdentityForPath: %v", err)
 	}
-	if identity.Product != ProductName {
-		t.Fatalf("product = %q, want %q", identity.Product, ProductName)
+	if identity.Product != "codex-feishu-link" {
+		t.Fatalf("product = %q, want codex-feishu-link", identity.Product)
 	}
 	if identity.Version != "1.2.3" {
 		t.Fatalf("version = %q, want 1.2.3", identity.Version)
@@ -118,6 +118,22 @@ func TestCompatibleIdentityFallbacks(t *testing.T) {
 	}
 }
 
+func TestCompatibleIdentityAcrossProductRename(t *testing.T) {
+	for _, productName := range []string{"codex-feishu-link", "codex-feishu-relay"} {
+		t.Run(productName, func(t *testing.T) {
+			if !CompatibleIdentity(testBinaryIdentity(), agentprotoIdentity(productName, "1.0.0", "fp-1")) {
+				t.Fatal("expected the current and legacy product names to accept the same binary")
+			}
+			if CompatibleIdentity(testBinaryIdentity(), agentprotoIdentity(productName, "1.0.0", "different-build")) {
+				t.Fatal("product name compatibility must not bypass fingerprint checks")
+			}
+			if !CompatibleIdentity(testBinaryIdentity(), agentprotoIdentity(productName, "1.0.0", "")) {
+				t.Fatal("expected version compatibility when the old identity has no fingerprint")
+			}
+		})
+	}
+}
+
 func TestDefaultPathsAndHelpers(t *testing.T) {
 	t.Run("xdg env", func(t *testing.T) {
 		configHome := filepath.Join(t.TempDir(), "config")
@@ -131,13 +147,13 @@ func TestDefaultPathsAndHelpers(t *testing.T) {
 		if err != nil {
 			t.Fatalf("DefaultPaths: %v", err)
 		}
-		if paths.ConfigFile != filepath.Join(configHome, ProductName, "config.json") {
+		if paths.ConfigFile != filepath.Join(configHome, "codex-feishu-relay", "config.json") {
 			t.Fatalf("unexpected config file: %q", paths.ConfigFile)
 		}
-		if paths.DaemonLogFile != filepath.Join(dataHome, ProductName, "logs", "codex-feishu-relay-relayd.log") {
+		if paths.DaemonLogFile != filepath.Join(dataHome, "codex-feishu-relay", "logs", "codex-feishu-relay-relayd.log") {
 			t.Fatalf("unexpected daemon log: %q", paths.DaemonLogFile)
 		}
-		if paths.ManagerLockFile != filepath.Join(stateHome, ProductName, "relay-manager.lock") {
+		if paths.ManagerLockFile != filepath.Join(stateHome, "codex-feishu-relay", "relay-manager.lock") {
 			t.Fatalf("unexpected manager lock: %q", paths.ManagerLockFile)
 		}
 	})
@@ -174,8 +190,8 @@ func TestDefaultPathsAndHelpers(t *testing.T) {
 			t.Fatalf("DefaultPaths: %v", err)
 		}
 		wantConfigHome := filepath.Join(pathscope.ApplyPrefix(home), ".config")
-		if paths.ConfigDir != filepath.Join(wantConfigHome, ProductName) {
-			t.Fatalf("ConfigDir = %q, want %q", paths.ConfigDir, filepath.Join(wantConfigHome, ProductName))
+		if paths.ConfigDir != filepath.Join(wantConfigHome, "codex-feishu-relay") {
+			t.Fatalf("ConfigDir = %q, want %q", paths.ConfigDir, filepath.Join(wantConfigHome, "codex-feishu-relay"))
 		}
 		if !strings.HasPrefix(paths.StateDir, prefix) {
 			t.Fatalf("StateDir = %q, want prefix %q", paths.StateDir, prefix)

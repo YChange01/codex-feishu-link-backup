@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 BIN_DIR="${ROOT_DIR}/bin"
-BUILD_OUTPUT="${BIN_DIR}/codex-feishu-relay"
+BUILD_OUTPUT="${BIN_DIR}/codex-feishu-link"
 GO_BIN="${GO_BIN:-go}"
 SELF_TARGET_SCRIPT="${ROOT_DIR}/scripts/install/self-install-target.sh"
 PULL=0
@@ -161,7 +161,7 @@ BUILD_BRANCH="$(resolve_build_branch)"
 CLOUDFLARED_EMBED_ALLOW_DOWNLOAD=0 \
   bash "${ROOT_DIR}/scripts/externalaccess/prepare-cloudflared-embed.sh"
 bash "${ROOT_DIR}/scripts/shim/prepare-shim-embed.sh"
-"${GO_BIN}" build -ldflags "-X main.branch=${BUILD_BRANCH}" -o "${BUILD_OUTPUT}" "${ROOT_DIR}/cmd/codex-feishu-relay"
+"${GO_BIN}" build -ldflags "-X main.branch=${BUILD_BRANCH}" -o "${BUILD_OUTPUT}" "${ROOT_DIR}/cmd/codex-feishu-link"
 
 printf '[5/6] stage local artifact %s\n' "${CODEX_FEISHU_RELAY_SELF_TARGET_LOCAL_UPGRADE_ARTIFACT_PATH}"
 mkdir -p "$(dirname "${CODEX_FEISHU_RELAY_SELF_TARGET_LOCAL_UPGRADE_ARTIFACT_PATH}")"

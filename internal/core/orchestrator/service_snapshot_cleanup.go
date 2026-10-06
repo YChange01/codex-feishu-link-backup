@@ -75,9 +75,7 @@ func (s *Service) observeConfig(inst *state.InstanceRecord, threadID, cwd, scope
 			if strings.TrimSpace(planMode) != "" {
 				applyObservedPlanMode(thread, planMode)
 			}
-			if observedPermission != nil {
-				thread.ObservedPermission = agentproto.CloneObservedPermissionState(observedPermission)
-			}
+			applyObservedThreadPermission(thread, observedPermission)
 		}
 		if access != "" && vscode {
 			s.updateInstanceCWDDefaults(inst, cwdDefaultKey, func(current *state.ModelConfigRecord) {

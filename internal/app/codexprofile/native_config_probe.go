@@ -108,8 +108,8 @@ func nativeConfigProbeFrames(version, cwd string) []OAuthProbeFrame {
 	return []OAuthProbeFrame{
 		newOAuthProbeRequest("codex-feishu-relay-native-initialize", "initialize", map[string]any{
 			"clientInfo": map[string]any{
-				"name":    "Codex Feishu Relay Native Config Probe",
-				"title":   "Codex Feishu Relay Native Config Probe",
+				"name":    "Codex Feishu Link Native Config Probe",
+				"title":   "Codex Feishu Link Native Config Probe",
 				"version": strings.TrimSpace(version),
 			},
 			"capabilities": map[string]any{"experimentalApi": true},

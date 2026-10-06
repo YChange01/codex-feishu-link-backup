@@ -28,7 +28,7 @@ function Fail([string]$Message) {
 }
 
 function Get-AssetName([string]$VersionValue) {
-  return ("codex-feishu-relay_{0}_windows_amd64.zip" -f $VersionValue.TrimStart("v"))
+  return ("codex-feishu-link_{0}_windows_amd64.zip" -f $VersionValue.TrimStart("v"))
 }
 
 function Expand-Binary([string]$DistDir, [string]$VersionValue, [string]$OutputDir) {
@@ -38,9 +38,9 @@ function Expand-Binary([string]$DistDir, [string]$VersionValue, [string]$OutputD
   }
   New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
   Expand-Archive -LiteralPath $asset -DestinationPath $OutputDir -Force
-  $binary = Get-ChildItem -LiteralPath $OutputDir -Recurse -File -Filter "codex-feishu-relay.exe" | Select-Object -First 1
+  $binary = Get-ChildItem -LiteralPath $OutputDir -Recurse -File -Filter "codex-feishu-link.exe" | Select-Object -First 1
   if ($null -eq $binary) {
-    Fail "codex-feishu-relay.exe not found after extracting $asset"
+    Fail "codex-feishu-link.exe not found after extracting $asset"
   }
   return $binary.FullName
 }
@@ -68,7 +68,7 @@ function Assert-JsonField([string]$PathValue, [string]$Field, [string]$Expected)
 
 function Stop-CodexFeishuRelayProcesses([string]$ExecutableRoot) {
   $escapedRoot = [Regex]::Escape($ExecutableRoot)
-  Get-CimInstance Win32_Process -Filter "Name = 'codex-feishu-relay.exe'" | ForEach-Object {
+  Get-CimInstance Win32_Process -Filter "Name = 'codex-feishu-link.exe'" | ForEach-Object {
     if ($_.ExecutablePath -and $_.ExecutablePath -match "^${escapedRoot}") {
       Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue
     }
@@ -170,7 +170,7 @@ try {
     Fail "first install failed with exit code $LASTEXITCODE"
   }
 
-  $liveBinary = Join-Path $installBinDir "codex-feishu-relay.exe"
+  $liveBinary = Join-Path $installBinDir "codex-feishu-link.exe"
   if (-not (Test-Path -LiteralPath $liveBinary -PathType Leaf)) {
     Fail "live binary missing after first install: $liveBinary"
   }
@@ -253,7 +253,7 @@ try {
 
   Write-Output "packaged installer lifecycle smoke passed"
 } finally {
-  $cleanupBinary = Join-Path $installBinDir "codex-feishu-relay.exe"
+  $cleanupBinary = Join-Path $installBinDir "codex-feishu-link.exe"
   if ((Test-Path -LiteralPath $statePath -PathType Leaf) -and (Test-Path -LiteralPath $cleanupBinary -PathType Leaf)) {
     & $cleanupBinary service uninstall-user -state-path $statePath *> $null
   }

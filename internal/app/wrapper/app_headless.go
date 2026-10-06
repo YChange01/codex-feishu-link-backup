@@ -95,8 +95,8 @@ func (a *App) syntheticInitializeFrame() ([]byte, error) {
 		"method": "initialize",
 		"params": map[string]any{
 			"clientInfo": map[string]any{
-				"name":    "Codex Feishu Relay Headless",
-				"title":   "Codex Feishu Relay Headless",
+				"name":    "Codex Feishu Link Headless",
+				"title":   "Codex Feishu Link Headless",
 				"version": xutil.FirstNonEmpty(a.config.Version, "dev"),
 			},
 			"capabilities": map[string]any{

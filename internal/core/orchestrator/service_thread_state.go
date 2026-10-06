@@ -106,6 +106,7 @@ func (s *Service) applyThreadSettingsUpdate(instanceID string, event agentproto.
 	}
 	thread := s.ensureThread(inst, update.ThreadID)
 	thread.ThreadSettings = agentproto.CloneThreadSettingsUpdate(update)
+	applyObservedThreadPermission(thread, event.ObservedPermission)
 	if update.Model != "" {
 		thread.ExplicitModel = update.Model
 	}
@@ -121,6 +122,15 @@ func (s *Service) applyThreadSettingsUpdate(instanceID string, event agentproto.
 	}
 	event.Model, event.ReasoningEffort = update.Model, update.ReasoningEffort
 	return s.sharedModelNotice(instanceID, event, "shared_model_settings", "会话模型设置已更新")
+}
+
+func applyObservedThreadPermission(thread *state.ThreadRecord, permission *agentproto.ObservedPermissionState) {
+	if thread == nil || permission == nil {
+		return
+	}
+	thread.ObservedPermission = agentproto.CloneObservedPermissionState(permission)
+	// A non-exact observation must also clear an older coarse projection.
+	thread.ObservedAccessMode = agentproto.NormalizeAccessMode(permission.ProjectedAccessMode)
 }
 
 func applyObservedPlanMode(thread *state.ThreadRecord, value string) {

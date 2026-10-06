@@ -100,6 +100,10 @@ func (t *Translator) adoptSharedCreatedThread(threadID string, command agentprot
 	t.sharedSubscriptionRequests = map[string]sharedSubscriptionRequest{}
 	record := parseThreadRecord(message["result"])
 	discovered := buildThreadDiscoveredEvent(record, threadID, record.CWD, record.Name, "", true, record.RuntimeStatus)
+	discovered.ObservedPermission = observedCodexPermission(lookupMap(message, "result"))
+	if discovered.ObservedPermission != nil {
+		discovered.AccessMode = discovered.ObservedPermission.ProjectedAccessMode
+	}
 	return Result{OutboundToCodex: frames, Events: []agentproto.Event{
 		{Kind: agentproto.EventThreadSubscribed, ThreadID: threadID, CommandID: command.CommandID, Status: "created"},
 		discovered,
@@ -148,7 +152,11 @@ func (t *Translator) observeSharedSubscriptionResponse(requestID string, message
 			event.Status, event.ErrorMessage = "failed", err.Error()
 			return Result{Suppress: true, Events: []agentproto.Event{event}}, true
 		}
-		return Result{Suppress: true, OutboundToCodex: [][]byte{frame}}, true
+		var events []agentproto.Event
+		if params := lookupMap(message, "result"); observedCodexPermission(params) != nil {
+			events = configObservedEvents(threadID, record.CWD, params, false)
+		}
+		return Result{Suppress: true, OutboundToCodex: [][]byte{frame}, Events: events}, true
 	}
 	turns, ok := lookupAny(message, "result", "data").([]any)
 	if !ok {

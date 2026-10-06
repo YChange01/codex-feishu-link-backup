@@ -141,7 +141,7 @@ func TestAdminPrefixAssetRouteServesBuiltBundle(t *testing.T) {
 	if contentType := rec.Header().Get("Content-Type"); !strings.Contains(contentType, "javascript") && !strings.Contains(contentType, "text/plain") {
 		t.Fatalf("unexpected asset content-type: %s", contentType)
 	}
-	if !strings.Contains(rec.Body.String(), "Codex Feishu Relay") {
+	if !strings.Contains(rec.Body.String(), "Codex Feishu Link") {
 		t.Fatalf("expected built bundle body, got %s", rec.Body.String())
 	}
 }
@@ -149,19 +149,23 @@ func TestAdminPrefixAssetRouteServesBuiltBundle(t *testing.T) {
 func TestBrandLogoRouteServesSVG(t *testing.T) {
 	app := newAdminUITestApp(config.DefaultAppConfig())
 
-	req := httptest.NewRequest(http.MethodGet, "/branding/codex-feishu-relay-logo.svg", nil)
-	req.RemoteAddr = "127.0.0.1:12345"
-	rec := httptest.NewRecorder()
-	app.apiServer.Handler.ServeHTTP(rec, req)
+	for _, path := range []string{"/branding/codex-feishu-link-logo.svg", "/branding/codex-feishu-relay-logo.svg"} {
+		t.Run(path, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodGet, path, nil)
+			req.RemoteAddr = "127.0.0.1:12345"
+			rec := httptest.NewRecorder()
+			app.apiServer.Handler.ServeHTTP(rec, req)
 
-	if rec.Code != http.StatusOK {
-		t.Fatalf("status = %d, want 200 body=%s", rec.Code, rec.Body.String())
-	}
-	if contentType := rec.Header().Get("Content-Type"); !strings.Contains(contentType, "image/svg+xml") {
-		t.Fatalf("unexpected content-type: %s", contentType)
-	}
-	if !strings.Contains(rec.Body.String(), "<svg") {
-		t.Fatalf("expected svg body, got %s", rec.Body.String())
+			if rec.Code != http.StatusOK {
+				t.Fatalf("status = %d, want 200 body=%s", rec.Code, rec.Body.String())
+			}
+			if contentType := rec.Header().Get("Content-Type"); !strings.Contains(contentType, "image/svg+xml") {
+				t.Fatalf("unexpected content-type: %s", contentType)
+			}
+			if !strings.Contains(rec.Body.String(), "<svg") {
+				t.Fatalf("expected svg body, got %s", rec.Body.String())
+			}
+		})
 	}
 }
 

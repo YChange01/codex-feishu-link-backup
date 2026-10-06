@@ -11,6 +11,7 @@ import (
 
 	"github.com/YChange01/codex-feishu-link/internal/config"
 	"github.com/YChange01/codex-feishu-link/internal/pathcompare"
+	"github.com/YChange01/codex-feishu-link/internal/product"
 	"github.com/YChange01/codex-feishu-link/internal/xutil"
 )
 
@@ -198,12 +199,24 @@ func installBinary(sourcePath, installDir string) (string, error) {
 	if err := os.MkdirAll(installDir, 0o755); err != nil {
 		return "", err
 	}
-	targetPath := filepath.Join(installDir, filepath.Base(sourcePath))
-	if samePath(sourcePath, targetPath) {
-		return targetPath, nil
+	name := filepath.Base(sourcePath)
+	isProductCommand := product.IsCompatibleName(strings.TrimSuffix(name, ".exe"))
+	if isProductCommand {
+		name = product.ExecutableName(runtime.GOOS)
 	}
-	if err := copyFile(sourcePath, targetPath); err != nil {
-		return "", err
+	targetPath := filepath.Join(installDir, name)
+	if !samePath(sourcePath, targetPath) {
+		if err := copyFile(sourcePath, targetPath); err != nil {
+			return "", err
+		}
+	}
+	if isProductCommand {
+		legacyPath := filepath.Join(installDir, product.LegacyExecutableName(runtime.GOOS))
+		if !samePath(sourcePath, legacyPath) {
+			if err := copyFile(targetPath, legacyPath); err != nil {
+				return "", err
+			}
+		}
 	}
 	return targetPath, nil
 }

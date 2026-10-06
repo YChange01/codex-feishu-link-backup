@@ -248,6 +248,7 @@ func (c *MultiGatewayController) ensureWorkerRunningLocked(gatewayID string) err
 	runtime.SetStateHook(func(state GatewayState, err error) {
 		c.applyStateHook(gatewayID, generation, state, err)
 	})
+	c.configurePermissionObserverLocked(gatewayID, generation, runtime)
 	worker.runtime = runtime
 	worker.previewer = c.newPreviewer(runtime, worker.config)
 	worker.previewer.SetWebPreviewPublisher(c.webPreviewPublisher)

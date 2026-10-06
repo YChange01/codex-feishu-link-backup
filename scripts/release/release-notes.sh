@@ -126,7 +126,7 @@ echo
 echo "Manual archive install:"
 echo
 echo '```bash'
-echo "./codex-feishu-relay install -bootstrap-only -start-daemon"
+echo "./codex-feishu-link install -bootstrap-only -start-daemon"
 echo '```'
 echo
 echo "## Detailed Changes"

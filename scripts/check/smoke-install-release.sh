@@ -59,7 +59,7 @@ current_asset_name() {
   else
     extension="tar.gz"
   fi
-  printf 'codex-feishu-relay_%s_%s_%s.%s\n' "${version#v}" "${goos}" "${goarch}" "${extension}"
+  printf 'codex-feishu-link_%s_%s_%s.%s\n' "${version#v}" "${goos}" "${goarch}" "${extension}"
 }
 
 work_dir="$(mktemp -d)"
@@ -68,7 +68,7 @@ daemon_pid=""
 cleanup() {
   local status=$?
   if [[ -z "${daemon_pid}" && -n "${home_dir:-}" ]]; then
-    daemon_pid="$(ps -eo pid=,args= | awk -v target="$(install_bin_dir "${home_dir}")/codex-feishu-relay daemon" '$0 ~ target && !f {f=1; print $1}')"
+    daemon_pid="$(ps -eo pid=,args= | awk -v target="$(install_bin_dir "${home_dir}")/codex-feishu-link daemon" '$0 ~ target && !f {f=1; print $1}')"
   fi
   if [[ -n "${daemon_pid}" ]]; then
     kill "${daemon_pid}" 2>/dev/null || true
@@ -290,7 +290,7 @@ bash ./install-release.sh
 
 expected_dir="${install_root}/${version}"
 [[ -d "${expected_dir}" ]]
-[[ -x "${expected_dir}/codex-feishu-relay" ]]
+[[ -x "${expected_dir}/codex-feishu-link" ]]
 [[ ! -e "${expected_dir}/setup.sh" ]]
 [[ ! -e "${expected_dir}/setup.ps1" ]]
 [[ ! -e "${expected_dir}/install.sh" ]]
@@ -302,10 +302,10 @@ from pathlib import Path
 
 release_dir = Path(sys.argv[1])
 entries = sorted(path.name for path in release_dir.iterdir())
-assert entries == ["codex-feishu-relay"], entries
+assert entries == ["codex-feishu-link"], entries
 PY
 
-installed_version="$("${expected_dir}/codex-feishu-relay" version)"
+installed_version="$("${expected_dir}/codex-feishu-link" version)"
 [[ "${installed_version}" == "${version}" ]]
 
 HOME="${home_dir}" \
@@ -319,7 +319,7 @@ bash ./install-release.sh --track beta --download-only
 
 beta_expected_dir="${track_install_root}/${beta_version}"
 [[ -d "${beta_expected_dir}" ]]
-[[ -x "${beta_expected_dir}/codex-feishu-relay" ]]
+[[ -x "${beta_expected_dir}/codex-feishu-link" ]]
 [[ -L "${track_install_root}/current" ]]
 
 python3 - "${beta_expected_dir}" <<'PY'
@@ -328,10 +328,10 @@ from pathlib import Path
 
 release_dir = Path(sys.argv[1])
 entries = sorted(path.name for path in release_dir.iterdir())
-assert entries == ["codex-feishu-relay"], entries
+assert entries == ["codex-feishu-link"], entries
 PY
 
-beta_installed_version="$("${beta_expected_dir}/codex-feishu-relay" version)"
+beta_installed_version="$("${beta_expected_dir}/codex-feishu-link" version)"
 [[ "${beta_installed_version}" == "${beta_version}" ]]
 
 python3 - "${home_dir}" <<'PY'
@@ -346,12 +346,12 @@ state_payload = json.loads(state_path.read_text())
 
 assert config_payload["wrapper"]["integrationMode"] == "none", config_payload
 assert state_payload.get("integrations", []) == [], state_payload
-assert state_payload["currentBinaryPath"].endswith("/codex-feishu-relay"), state_payload
+assert state_payload["currentBinaryPath"].endswith("/codex-feishu-link"), state_payload
 PY
 
 for _ in $(seq 1 60); do
   if curl --noproxy '*' -fsS "http://127.0.0.1:${admin_port}/api/setup/bootstrap-state" > "${work_dir}/bootstrap-state.json" 2>/dev/null; then
-    daemon_pid="$(ps -eo pid=,args= | awk -v target="$(install_bin_dir "${home_dir}")/codex-feishu-relay daemon" '$0 ~ target && !f {f=1; print $1}')"
+    daemon_pid="$(ps -eo pid=,args= | awk -v target="$(install_bin_dir "${home_dir}")/codex-feishu-link daemon" '$0 ~ target && !f {f=1; print $1}')"
     break
   fi
   sleep 0.2
@@ -374,5 +374,5 @@ assert payload["relay"]["listenPort"] == relay_port, payload
 assert payload["session"]["trustedLoopback"] is True, payload
 
 html = (Path(work_dir) / "setup.html").read_text()
-assert "Codex Feishu Relay" in html, html[:200]
+assert "Codex Feishu Link" in html, html[:200]
 PY

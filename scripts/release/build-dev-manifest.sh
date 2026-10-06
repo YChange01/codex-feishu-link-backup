@@ -48,6 +48,7 @@ base_url = sys.argv[3].rstrip("/")
 version = sys.argv[4]
 commit = sys.argv[5]
 built_at = sys.argv[6]
+# Old dev updaters require the legacy package layout; both readers consume it.
 pattern = re.compile(r"^codex-feishu-relay_dev_(linux|darwin|windows)_(amd64|arm64)\.(tar\.gz|zip)$")
 
 checksums = {}

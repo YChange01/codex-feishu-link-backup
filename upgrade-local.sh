@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 BIN_DIR="${ROOT_DIR}/bin"
-BUILD_OUTPUT="${BIN_DIR}/codex-feishu-relay"
+BUILD_OUTPUT="${BIN_DIR}/codex-feishu-link"
 GO_BIN="${GO_BIN:-go}"
 BASE_DIR=""
 INSTANCE=""
@@ -16,7 +16,7 @@ usage() {
   cat <<'EOF'
 usage: ./upgrade-local.sh [--instance <id>] [--base-dir <dir>] [--slot <slot>] [--allow-dirty]
 
-Pull the current branch to the latest upstream commit, rebuild ./bin/codex-feishu-relay,
+Pull the current branch to the latest upstream commit, rebuild ./bin/codex-feishu-link,
 stage it into the fixed local-upgrade artifact path, and trigger the built-in
 local upgrade transaction against the installed daemon state.
 
@@ -109,11 +109,11 @@ BUILD_BRANCH="$(resolve_build_branch)"
 CLOUDFLARED_EMBED_ALLOW_DOWNLOAD=0 \
   bash "${ROOT_DIR}/scripts/externalaccess/prepare-cloudflared-embed.sh"
 bash "${ROOT_DIR}/scripts/shim/prepare-shim-embed.sh"
-"${GO_BIN}" build -ldflags "-X main.branch=${BUILD_BRANCH}" -o "${BUILD_OUTPUT}" "${ROOT_DIR}/cmd/codex-feishu-relay"
+"${GO_BIN}" build -ldflags "-X main.branch=${BUILD_BRANCH}" -o "${BUILD_OUTPUT}" "${ROOT_DIR}/cmd/codex-feishu-link"
 
 if [[ ! -f "${CODEX_FEISHU_RELAY_TARGET_STATE_PATH}" ]]; then
   echo "install state not found: ${CODEX_FEISHU_RELAY_TARGET_STATE_PATH}" >&2
-  echo "build ./bin/codex-feishu-relay and run './bin/codex-feishu-relay install -bootstrap-only -start-daemon' first, or pass --base-dir for the installed environment" >&2
+  echo "build ./bin/codex-feishu-link and run './bin/codex-feishu-link install -bootstrap-only -start-daemon' first, or pass --base-dir for the installed environment" >&2
   exit 1
 fi
 

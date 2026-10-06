@@ -16,6 +16,7 @@ import (
 	"github.com/YChange01/codex-feishu-link/internal/core/agentproto"
 	"github.com/YChange01/codex-feishu-link/internal/core/netutil"
 	"github.com/YChange01/codex-feishu-link/internal/core/relayurl"
+	"github.com/YChange01/codex-feishu-link/internal/product"
 )
 
 type ProbeStatus string
@@ -185,7 +186,7 @@ func (m *Manager) classifyWelcome(welcome agentproto.Welcome) ProbeResult {
 		return ProbeResult{Status: ProbeIncompatible, Welcome: welcome, Err: errors.New("relay welcome missing server identity")}
 	}
 	server := welcome.Server.BinaryIdentity
-	if server.Product != "" && server.Product != ProductName {
+	if server.Product != "" && !product.IsCompatibleName(server.Product) {
 		return ProbeResult{Status: ProbeUnknown, Welcome: welcome, Err: fmt.Errorf("unexpected relay product %q", server.Product)}
 	}
 	if CompatibleIdentity(m.config.Identity, server) {
