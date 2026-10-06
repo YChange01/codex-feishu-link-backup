@@ -181,13 +181,13 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Download production fixture
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: installer-smoke-prod
           path: ${{ runner.temp }}/installer-smoke/prod
 
       - name: Download beta fixture
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: installer-smoke-beta
           path: ${{ runner.temp }}/installer-smoke/beta
@@ -209,25 +209,25 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Download production fixture
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: installer-smoke-prod
           path: ${{ runner.temp }}\installer-smoke\prod
 
       - name: Download beta fixture
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: installer-smoke-beta
           path: ${{ runner.temp }}\installer-smoke\beta
 
       - name: Download production Windows NSIS installer
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: installer-smoke-prod-windows-nsis
           path: ${{ runner.temp }}\installer-smoke\nsis\prod
 
       - name: Download beta Windows NSIS installer
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: installer-smoke-beta-windows-nsis
           path: ${{ runner.temp }}\installer-smoke\nsis\beta
@@ -260,13 +260,13 @@ jobs:
         run: bash scripts/check/smoke-macos-installer-result-model.sh
 
       - name: Download production fixture
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: installer-smoke-prod-macos-input
           path: ${{ runner.temp }}/installer-smoke/prod
 
       - name: Download beta fixture
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: installer-smoke-beta-macos-input
           path: ${{ runner.temp }}/installer-smoke/beta

@@ -100,7 +100,7 @@ jobs:
 
       - name: Download prebuilt artifacts
         if: ${{ inputs.artifact_name != '' }}
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: ${{ inputs.artifact_name }}
           path: dist
@@ -154,7 +154,7 @@ jobs:
           ref: ${{ needs.build-dev-assets.outputs.source_ref }}
 
       - name: Download macOS packaging input
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: dev-release-macos-input-dist
           path: ${{ runner.temp }}/dev-release-macos-dist
@@ -189,13 +189,13 @@ jobs:
           ref: ${{ needs.build-dev-assets.outputs.source_ref }}
 
       - name: Download base dev dist
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: dev-release-base-dist
           path: dist
 
       - name: Download macOS packaged installer
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: dev-release-macos-packaged-installer
           path: dist

@@ -179,7 +179,7 @@ jobs:
           ref: ${{ needs.build-base-assets.outputs.source_ref }}
 
       - name: Download internal base dist
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: internal-manual-build-base-dist
           path: dist
@@ -215,13 +215,13 @@ jobs:
           ref: ${{ needs.build-base-assets.outputs.source_ref }}
 
       - name: Download internal base dist
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: internal-manual-build-base-dist
           path: dist
 
       - name: Download internal macOS packaged installer
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: internal-manual-build-macos-packaged-installer
           path: dist
