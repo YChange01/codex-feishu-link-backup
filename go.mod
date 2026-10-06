@@ -1,10 +1,11 @@
 module github.com/YChange01/codex-feishu-link
 
-go 1.24.6
+go 1.25
 
 require (
 	github.com/BurntSushi/toml v1.4.0
-	github.com/alecthomas/chroma/v2 v2.23.1
+	github.com/alecthomas/chroma/v2 v2.27.0
+	github.com/google/jsonschema-go v0.4.2
 	github.com/gorilla/websocket v1.5.3
 	github.com/klauspost/compress v1.18.5
 	github.com/larksuite/oapi-sdk-go/v3 v3.9.10
@@ -19,10 +20,9 @@ require (
 )
 
 require (
-	github.com/dlclark/regexp2 v1.11.5 // indirect
+	github.com/dlclark/regexp2/v2 v2.2.1 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/google/jsonschema-go v0.4.2 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/ncruces/go-strftime v1.0.0 // indirect
