@@ -32,7 +32,7 @@ jobs:
 
       - name: Checkout
         if: ${{ contains(join(github.event.issue.labels.*.name, ','), 'release:tracker') }}
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
