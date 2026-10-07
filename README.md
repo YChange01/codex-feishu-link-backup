@@ -21,7 +21,7 @@
 
 ## 安装
 
-当前支持 Linux、macOS（Intel / Apple Silicon）和 Windows（amd64）。新仓库尚未发布二进制 Release 时，请使用源码安装；下面的安装器与在线脚本依赖本仓库已发布的 Release。
+当前支持 Linux、macOS（Intel / Apple Silicon）和 Windows（amd64）。可从 [GitHub Releases](https://github.com/YChange01/codex-feishu-link/releases/latest) 下载原生安装器或压缩包，也可以从源码安装。
 
 ### 方式一：从源码安装
 
@@ -49,7 +49,7 @@ go build -o .\bin\codex-feishu-link.exe ./cmd/codex-feishu-link
 
 打开命令输出中的 `/setup` 地址完成飞书接入。桌面共享后台适配是独立的可选能力，另见 [codex-desktop-link](./cmd/codex-desktop-link/README.md)。
 
-### 方式二：原生安装器（发布 Release 后可用）
+### 方式二：原生安装器
 
 #### Windows
 
@@ -65,6 +65,8 @@ go build -o .\bin\codex-feishu-link.exe ./cmd/codex-feishu-link
 
 #### macOS
 
+图形安装器要求 macOS 13 或更高版本，同时支持 Intel 和 Apple Silicon。当前安装包尚未经过 Developer ID 签名和公证。
+
 1. 从 [GitHub Releases](https://github.com/YChange01/codex-feishu-link/releases) 下载：
 
    ```text
@@ -75,7 +77,7 @@ go build -o .\bin\codex-feishu-link.exe ./cmd/codex-feishu-link
 3. 首次安装可以选择安装目录；完成后在结果页打开 WebSetup 完成飞书接入。
 4. 已安装过时再次运行，会按 repair / 升级处理。
 
-### 方式三：在线脚本安装（发布 Release 后可用）
+### 方式三：在线脚本安装
 
 macOS / Linux：
 
@@ -102,11 +104,11 @@ curl -fsSL https://raw.githubusercontent.com/YChange01/codex-feishu-link/main/in
 安装指定版本：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/YChange01/codex-feishu-link/main/install-release.sh | bash -s -- --version v1.0.0
+curl -fsSL https://raw.githubusercontent.com/YChange01/codex-feishu-link/main/install-release.sh | bash -s -- --version v2.0.1
 ```
 
 ```powershell
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/YChange01/codex-feishu-link/main/install-release.ps1))) -Version v1.0.0
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/YChange01/codex-feishu-link/main/install-release.ps1))) -Version v2.0.1
 ```
 
 脚本会自动识别平台、下载对应 release 包、安装并启动本地 daemon，然后打开或打印 WebSetup 地址。

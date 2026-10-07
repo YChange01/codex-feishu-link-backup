@@ -1,5 +1,21 @@
 # Changelog
 
+## v2.0.1
+
+### Codex Feishu Link 首次发布安装包
+
+- 项目、主命令和公开安装包统一使用 `codex-feishu-link` 名称。
+- 提供 Windows amd64 安装器和 ZIP，以及 macOS Intel / Apple Silicon 通用 DMG 和各架构压缩包。
+- macOS 图形安装器要求 macOS 13 或更高版本；当前安装包未进行 Developer ID 签名和公证，Windows 安装器未进行 Authenticode 签名。
+- 保留旧命令、配置目录、服务标识、环境变量和更新包兼容，沿用既有凭据与安装状态。
+
+### 权限判断与代码维护
+
+- 修正共享 Codex 后台模式的权限归属，避免把未确认的权限状态默认为完全访问。
+- 完善飞书权限检测及授权状态处理，让权限缺口提示与实际检查结果一致。
+- 删除未使用代码，将仅供测试的辅助逻辑移入测试文件。
+- 修正 PATH 补全测试中的平台路径假设，覆盖 Windows 原生系统路径。
+
 ## v2.0.0
 
 ### OpenCode 现在可以直接接入飞书了

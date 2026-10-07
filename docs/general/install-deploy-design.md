@@ -2,7 +2,7 @@
 
 > Type: `general`
 > Updated: `2026-10-07`
-> Summary: 公开命令和产品名称统一为 Codex Feishu Link，既有安装路径与环境变量继续保持兼容。
+> Summary: 同步 Link 发布产物名称与旧更新包兼容边界，说明 macOS 安装器的系统版本和签名状态。
 
 ## 1. 范围
 
@@ -252,7 +252,8 @@ codex-feishu-relay packaged-install [flags]
 现阶段边界：
 
 - macOS installer 的 GUI shell 与本地打包脚本已经存在
-- 这套产物 contract 已并入正式 GitHub Release workflow：`release.yml` 在 `macos-latest` runner 上调用 `scripts/release/build-macos-packaged-installer.sh` 生成 `codex-feishu-relay_<version>_darwin_universal_installer.dmg`，并刷新 `checksums.txt` 后随 release 发布
+- 这套产物 contract 已并入正式 GitHub Release workflow：`release.yml` 在 `macos-latest` runner 上调用 `scripts/release/build-macos-packaged-installer.sh` 生成 `codex-feishu-link_<version>_darwin_universal_installer.dmg`，并刷新 `checksums.txt` 后随 release 发布
+- 图形安装器要求 macOS 13 或更高版本，当前未配置 Developer ID 签名和公证
 - 当前非 macOS runner 只能做静态检查，不能在 Linux runner 上直接编译 AppKit GUI
 
 ### 3.4 build flavor 与能力边界
@@ -543,13 +544,14 @@ detect/apply/reinstall 的当前规则也同步收紧：
 
 当前 `scripts/release/build-artifacts.sh` 为每个平台构建：
 
-- 一个带版本号的 `codex-feishu-link` / `codex-feishu-relay.exe`
+- 一个带版本号的 `codex-feishu-link` / `codex-feishu-link.exe`
 - 平台归档是 binary-only，只包含归档目录和对应平台二进制
+- 同时生成旧 `codex-feishu-relay_*` 归档及旧二进制名称，供既有更新器继续升级；新安装默认使用 Link 归档
 
 另外单独生成：
 
-- `codex-feishu-relay_<version>_windows_amd64_installer.exe`
-- `codex-feishu-relay_<version>_darwin_universal_installer.dmg`
+- `codex-feishu-link_<version>_windows_amd64_installer.exe`（当前未配置 Authenticode 签名）
+- `codex-feishu-link_<version>_darwin_universal_installer.dmg`
 - `checksums.txt`
 
 在线安装脚本（`install-release.sh` / `install-release.ps1`）不作为版本 release asset 发布，始终从 repo 主分支获取。
@@ -562,8 +564,8 @@ macOS packaged installer 由本地脚本 contract 统一构建：
 
 它们要求在 mac runner 上执行，并复用已经构建好的：
 
-- `codex-feishu-relay_<version>_darwin_amd64.tar.gz`
-- `codex-feishu-relay_<version>_darwin_arm64.tar.gz`
+- `codex-feishu-link_<version>_darwin_amd64.tar.gz`
+- `codex-feishu-link_<version>_darwin_arm64.tar.gz`
 
 release 包内不再附带：
 
@@ -576,8 +578,8 @@ release 包内不再附带：
 正式 release 只走 GitHub Actions：
 
 - `Release` workflow 在 GitHub 端构建 admin UI 与多平台二进制
-- `Release` workflow 在现有 Windows zip 归档构建完成后，额外安装 `NSIS` 并生成 `codex-feishu-relay_<version>_windows_amd64_installer.exe`
-- `Release` workflow 额外在 mac runner 上复用 `scripts/release/build-macos-packaged-installer.sh`，生成 `codex-feishu-relay_<version>_darwin_universal_installer.dmg`
+- `Release` workflow 在现有 Windows zip 归档构建完成后，额外安装 `NSIS` 并生成 `codex-feishu-link_<version>_windows_amd64_installer.exe`
+- `Release` workflow 额外在 mac runner 上复用 `scripts/release/build-macos-packaged-installer.sh`，生成 `codex-feishu-link_<version>_darwin_universal_installer.dmg`
 - workflow 显式区分 `production / beta / alpha` 三条 track
 - `beta / alpha` 由 track 自动映射到 GitHub `prerelease=true`
 - workflow 会先算出本次发布版本，再构建正式 release 产物

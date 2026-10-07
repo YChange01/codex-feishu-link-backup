@@ -222,6 +222,7 @@ func TestBuildCodexResolvedChildEnvDoesNotSupplementMissingProviderKeyFromShell(
 }
 
 func TestSupplementDetachedPATHMergesInteractiveShellPATH(t *testing.T) {
+	systemRoot, systemPaths, userPaths := codexPATHTestEntries()
 	originalLookup := lookupUserShellEnvValue
 	defer func() { lookupUserShellEnvValue = originalLookup }()
 	lookupUserShellEnvValue = func(env []string, key string) (string, error) {
@@ -229,25 +230,25 @@ func TestSupplementDetachedPATHMergesInteractiveShellPATH(t *testing.T) {
 			t.Fatalf("lookup key = %q, want PATH", key)
 		}
 		return strings.Join([]string{
-			"/opt/homebrew/bin",
-			"/usr/local/bin",
-			"/usr/bin",
+			userPaths[0],
+			userPaths[1],
+			systemPaths[0],
 		}, string(os.PathListSeparator)), nil
 	}
 
 	got := SupplementDetachedPATH([]string{
-		"PATH=" + strings.Join([]string{"/usr/bin", "/bin"}, string(os.PathListSeparator)),
-		"HOME=/tmp/demo",
+		"PATH=" + strings.Join(systemPaths, string(os.PathListSeparator)),
+		"SystemRoot=" + systemRoot,
 	})
 	value, ok := lookupEnvValue(got, "PATH")
 	if !ok {
 		t.Fatal("PATH missing after supplement")
 	}
 	want := strings.Join([]string{
-		"/usr/bin",
-		"/bin",
-		"/opt/homebrew/bin",
-		"/usr/local/bin",
+		systemPaths[0],
+		systemPaths[1],
+		userPaths[0],
+		userPaths[1],
 	}, string(os.PathListSeparator))
 	if value != want {
 		t.Fatalf("PATH = %q, want %q", value, want)
@@ -255,26 +256,34 @@ func TestSupplementDetachedPATHMergesInteractiveShellPATH(t *testing.T) {
 }
 
 func TestSupplementDetachedPATHFallsBackToNormalizedCurrentPATH(t *testing.T) {
+	systemRoot, systemPaths, _ := codexPATHTestEntries()
 	originalLookup := lookupUserShellEnvValue
 	defer func() { lookupUserShellEnvValue = originalLookup }()
+	lookupCalls := 0
 	lookupUserShellEnvValue = func(env []string, key string) (string, error) {
+		lookupCalls++
 		return "", fmt.Errorf("shell unavailable")
 	}
 
 	got := SupplementDetachedPATH([]string{
-		"PATH=" + strings.Join([]string{"/usr/bin", "", "/usr/bin", "/bin"}, string(os.PathListSeparator)),
+		"PATH=" + strings.Join([]string{systemPaths[0], "", systemPaths[0], systemPaths[1]}, string(os.PathListSeparator)),
+		"SystemRoot=" + systemRoot,
 	})
+	if lookupCalls != 1 {
+		t.Fatalf("lookup calls = %d, want 1", lookupCalls)
+	}
 	value, ok := lookupEnvValue(got, "PATH")
 	if !ok {
 		t.Fatal("PATH missing after supplement")
 	}
-	want := strings.Join([]string{"/usr/bin", "/bin"}, string(os.PathListSeparator))
+	want := strings.Join(systemPaths, string(os.PathListSeparator))
 	if value != want {
 		t.Fatalf("PATH = %q, want %q", value, want)
 	}
 }
 
 func TestSupplementDetachedPATHSkipsShellForAnAlreadyPopulatedPATH(t *testing.T) {
+	systemRoot, systemPaths, userPaths := codexPATHTestEntries()
 	originalLookup := lookupUserShellEnvValue
 	defer func() { lookupUserShellEnvValue = originalLookup }()
 	lookupUserShellEnvValue = func([]string, string) (string, error) {
@@ -282,8 +291,8 @@ func TestSupplementDetachedPATHSkipsShellForAnAlreadyPopulatedPATH(t *testing.T)
 		return "", nil
 	}
 
-	currentPath := strings.Join([]string{"/opt/tools/bin", "/usr/bin", "/bin"}, string(os.PathListSeparator))
-	got := SupplementDetachedPATH([]string{"PATH=" + currentPath, "HOME=/tmp/demo"})
+	currentPath := strings.Join([]string{userPaths[0], systemPaths[0], systemPaths[1]}, string(os.PathListSeparator))
+	got := SupplementDetachedPATH([]string{"PATH=" + currentPath, "SystemRoot=" + systemRoot})
 	value, ok := lookupEnvValue(got, "PATH")
 	if !ok || value != currentPath {
 		t.Fatalf("PATH = %q, present=%v, want %q", value, ok, currentPath)
@@ -291,6 +300,7 @@ func TestSupplementDetachedPATHSkipsShellForAnAlreadyPopulatedPATH(t *testing.T)
 }
 
 func TestBuildCodexChildEnvSupplementsDetachedPATHBeforeCodexLookup(t *testing.T) {
+	systemRoot, systemPaths, userPaths := codexPATHTestEntries()
 	homeDir := t.TempDir()
 	writeCodexConfigForTest(t, filepath.Join(homeDir, ".codex"), `
 model_provider = "custom"
@@ -307,13 +317,13 @@ env_key = "CUSTOM_API_KEY"
 		lookupCalls++
 		switch key {
 		case "PATH":
-			return strings.Join([]string{"/opt/homebrew/bin", "/usr/bin"}, string(os.PathListSeparator)), nil
+			return strings.Join([]string{userPaths[0], systemPaths[0]}, string(os.PathListSeparator)), nil
 		case "CUSTOM_API_KEY":
 			value, ok := lookupEnvValue(env, "PATH")
 			if !ok {
 				t.Fatal("CUSTOM_API_KEY lookup env missing PATH")
 			}
-			want := strings.Join([]string{"/usr/bin", "/opt/homebrew/bin"}, string(os.PathListSeparator))
+			want := strings.Join([]string{systemPaths[0], userPaths[0]}, string(os.PathListSeparator))
 			if value != want {
 				t.Fatalf("PATH during CUSTOM_API_KEY lookup = %q, want %q", value, want)
 			}
@@ -326,14 +336,22 @@ env_key = "CUSTOM_API_KEY"
 
 	got := BuildCodexChildEnv([]string{
 		"HOME=" + homeDir,
-		"PATH=/usr/bin",
+		"PATH=" + systemPaths[0],
+		"SystemRoot=" + systemRoot,
 	}, nil, []string{"app-server"})
 	if lookupCalls != 2 {
 		t.Fatalf("lookup calls = %d, want 2", lookupCalls)
 	}
-	if value, ok := lookupEnvValue(got, "PATH"); !ok || value != strings.Join([]string{"/usr/bin", "/opt/homebrew/bin"}, string(os.PathListSeparator)) {
+	if value, ok := lookupEnvValue(got, "PATH"); !ok || value != strings.Join([]string{systemPaths[0], userPaths[0]}, string(os.PathListSeparator)) {
 		t.Fatalf("PATH = %q ok=%v", value, ok)
 	}
+}
+
+func codexPATHTestEntries() (systemRoot string, systemPaths, userPaths []string) {
+	if os.PathListSeparator == ';' {
+		return `C:\Windows`, []string{`C:\Windows\System32`, `C:\Windows`}, []string{`C:\Users\demo\bin`, `C:\Program Files\nodejs`}
+	}
+	return "", []string{"/usr/bin", "/bin"}, []string{"/opt/homebrew/bin", "/usr/local/bin"}
 }
 
 func TestShellLookupArgsUseInteractiveLoginShellForBash(t *testing.T) {
