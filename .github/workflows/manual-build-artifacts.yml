@@ -160,7 +160,7 @@ jobs:
             --dist-dir dist
 
       - name: Upload internal base dist
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: internal-manual-build-base-dist
           path: dist
@@ -193,7 +193,7 @@ jobs:
             --dist-dir dist
 
       - name: Upload internal macOS packaged installer
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: internal-manual-build-macos-packaged-installer
           path: dist/codex-feishu-link_*_darwin_universal_installer.dmg
@@ -247,7 +247,7 @@ jobs:
           bash scripts/release/write-checksums.sh dist
 
       - name: Upload complete downloadable dist
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ needs.build-base-assets.outputs.artifact_name }}
           path: dist/*

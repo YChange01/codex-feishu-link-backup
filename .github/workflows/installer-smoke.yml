@@ -119,14 +119,14 @@ jobs:
             --dist-dir dist-beta
 
       - name: Upload production fixture
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: installer-smoke-prod
           path: dist-production
           if-no-files-found: error
 
       - name: Upload production macOS packaging fixture
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: installer-smoke-prod-macos-input
           path: |
@@ -135,14 +135,14 @@ jobs:
           if-no-files-found: error
 
       - name: Upload beta fixture
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: installer-smoke-beta
           path: dist-beta
           if-no-files-found: error
 
       - name: Upload production Windows NSIS installer
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: installer-smoke-prod-windows-nsis
           path: dist-production/codex-feishu-link_0.0.0_windows_amd64_installer.exe
@@ -150,7 +150,7 @@ jobs:
           compression-level: 0
 
       - name: Upload beta Windows NSIS installer
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: installer-smoke-beta-windows-nsis
           path: dist-beta/codex-feishu-link_0.1.0-beta.1_windows_amd64_installer.exe
@@ -158,7 +158,7 @@ jobs:
           compression-level: 0
 
       - name: Upload beta macOS packaging fixture
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: installer-smoke-beta-macos-input
           path: |
@@ -295,7 +295,7 @@ jobs:
           grep -F "$(basename "${beta_dmg}")" "${RUNNER_TEMP}/installer-smoke/beta/checksums.txt"
 
       - name: Upload production macOS packaged installer
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: installer-smoke-macos-prod-dmg
           path: ${{ runner.temp }}/installer-smoke/prod/codex-feishu-link_0.0.0_darwin_universal_installer.dmg
@@ -303,7 +303,7 @@ jobs:
           compression-level: 0
 
       - name: Upload beta macOS packaged installer
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: installer-smoke-macos-beta-dmg
           path: ${{ runner.temp }}/installer-smoke/beta/codex-feishu-link_0.1.0-beta.1_darwin_universal_installer.dmg
