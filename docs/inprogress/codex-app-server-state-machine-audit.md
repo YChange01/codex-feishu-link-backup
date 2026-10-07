@@ -1,8 +1,8 @@
 # Codex App Server 状态机遵循度审计
 
 > Type: `inprogress`
-> Updated: `2026-08-13`
-> Summary: 修正 headless reasoning 订阅边界：`summaryTextDelta` 作为 verbose/chatty 可见摘要持续订阅并合并投影，`textDelta` 继续 opt-out，completion `summary[]` 只对缺失 index 做去重后备。
+> Updated: `2026-10-07`
+> Summary: 将仅供测试使用的 protocol coverage manifest 移入测试文件，同步覆盖基线与证据索引；协议分类和校验保持不变。
 
 ## 1. 审计范围与判定口径
 
@@ -675,7 +675,7 @@ Headless / cron synthetic initialize 当前 opt-out：
 ### 6.3 `#690` 后的 repo 内 coverage 基线
 
 - `#690` 已把 protocol coverage 从人工段落迁入 repo 内可测试 manifest：
-  - `internal/adapter/codex/protocol_coverage.go`
+  - `internal/adapter/codex/protocol_coverage_manifest_test.go`
   - `internal/adapter/codex/testdata/app_server_protocol_methods_current.json`
 - 当前快照基于 `openai/codex` HEAD `315195492c80fdade38e917c18f9584efd599304`，记录：
   - `ClientRequest`：127 个 method。
@@ -818,7 +818,7 @@ Headless / cron synthetic initialize 当前 opt-out：
 
 Repo 内 protocol coverage 基线（`#690`，复核到 `openai/codex` HEAD `315195492c80fdade38e917c18f9584efd599304`）：
 
-- `internal/adapter/codex/protocol_coverage.go`
+- `internal/adapter/codex/protocol_coverage_manifest_test.go`
 - `internal/adapter/codex/protocol_coverage_test.go`
 - `internal/adapter/codex/testdata/app_server_protocol_methods_current.json`
 

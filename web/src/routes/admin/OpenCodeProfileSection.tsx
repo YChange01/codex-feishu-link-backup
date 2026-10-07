@@ -19,6 +19,7 @@ import type {
   OpenCodeProfileSummary,
   OpenCodeProfileWriteRequest,
 } from "../../lib/types";
+import { blankToUndefined } from "../shared/helpers";
 import {
   ConfigBuiltInDetailCard,
   ConfigDeleteConfirmModal,
@@ -206,7 +207,6 @@ export function OpenCodeProfileSection(props: OpenCodeProfileSectionProps) {
     <>
       <ConfigSectionShell
         sectionTitle="OpenCode"
-        sectionDescription="管理 OpenCode API 配置"
         emptyLoadErrorTitle="当前还不能读取 OpenCode 配置"
         loadError={loadError}
         onReload={onReload}
@@ -631,16 +631,11 @@ function buildUpdatePayload(draft: OpenCodeProfileDraft): OpenCodeProfileWriteRe
     reasoningEffort: normalizeOpenCodeReasoningEffort(draft.reasoningEffort),
     visionSupported: draft.visionSupported,
   };
-  const apiKey = optionalString(draft.apiKey);
+  const apiKey = blankToUndefined(draft.apiKey);
   if (apiKey) {
     payload.apiKey = apiKey;
   }
   return payload;
-}
-
-function optionalString(value: string): string | undefined {
-  const trimmed = value.trim();
-  return trimmed ? trimmed : undefined;
 }
 
 function normalizeOpenCodeProviderType(value: string | undefined): string {

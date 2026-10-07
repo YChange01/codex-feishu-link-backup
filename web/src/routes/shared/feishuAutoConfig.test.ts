@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import {
   buildMissingScopesImportJSON,
   describeAutoConfigBlockingReason,
-  describeAutoConfigRequirementDisplay,
   groupAutoConfigRequirements,
   onboardingAutoConfigNoticeTone,
 } from "./feishuAutoConfig";
@@ -49,32 +48,28 @@ describe("feishu auto-config shared helpers", () => {
     );
   });
 
-  it("builds requirement display rows from the shared label/detail rules", () => {
+  it("shows requirement labels and feature impacts in grouped rows", () => {
     expect(
-      describeAutoConfigRequirementDisplay({
-        kind: "scope",
-        key: "im:message",
-        scopeType: "tenant",
-        required: true,
-        present: false,
-      }),
-    ).toEqual({
-      label: "权限 im:message",
-      detail: "",
-    });
-
-    expect(
-      describeAutoConfigRequirementDisplay({
-        kind: "event",
-        key: "message.receive_v1",
-        feature: "core_message_flow",
-        required: true,
-        present: false,
-      }),
-    ).toEqual({
-      label: "事件 message.receive_v1",
-      detail: "机器人基础消息能力",
-    });
+      groupAutoConfigRequirements([
+        {
+          kind: "scope",
+          key: "im:message",
+          scopeType: "tenant",
+          required: true,
+          present: false,
+        },
+        {
+          kind: "event",
+          key: "message.receive_v1",
+          feature: "core_message_flow",
+          required: true,
+          present: false,
+        },
+      ]),
+    ).toMatchObject([
+      { label: "权限 im:message", impacts: [] },
+      { label: "事件 message.receive_v1", impacts: ["机器人基础消息能力"] },
+    ]);
   });
 
   it("groups requirement rows by missing config and merges impact labels", () => {

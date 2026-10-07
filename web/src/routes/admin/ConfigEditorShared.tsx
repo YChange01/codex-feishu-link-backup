@@ -167,7 +167,6 @@ export function useConfigEditorSection<TItem extends ConfigEditorItem, TDraft>(
 
 type ConfigSectionShellProps<TItem extends ConfigEditorItem> = {
   sectionTitle: string;
-  sectionDescription: string;
   emptyLoadErrorTitle: string;
   loadError: string;
   onReload: () => Promise<void> | void;
@@ -189,7 +188,6 @@ export function ConfigSectionShell<TItem extends ConfigEditorItem>(
 ) {
   const {
     sectionTitle,
-    sectionDescription,
     emptyLoadErrorTitle,
     loadError,
     onReload,

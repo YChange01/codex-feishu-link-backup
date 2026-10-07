@@ -27,7 +27,6 @@ func TestIdentifyEmbeddedCatalog(t *testing.T) {
 		{name: "mimo endpoint and model", baseURL: "https://token-plan-cn.xiaomimimo.com/v1", model: "mimo-v2.5", want: "mimo"},
 		// 未命中
 		{name: "unknown model unknown endpoint", baseURL: "https://proxy.example/v1", model: "provider-custom", want: ""},
-		{name: "gpt model deepseek endpoint", baseURL: "https://api.deepseek.com/", model: "gpt-5.5", want: "deepseek"},
 		{name: "empty", baseURL: "", model: "", want: ""},
 	}
 	for _, tt := range tests {
@@ -60,13 +59,13 @@ func TestEmbeddedCatalogPath(t *testing.T) {
 }
 
 func TestMimoModelCatalogJSON(t *testing.T) {
-	raw := MimoModelCatalogJSON()
+	raw := MimoCatalog.CatalogJSON()
 	if len(raw) == 0 {
 		t.Fatal("expected embedded MiMo model catalog")
 	}
 	raw[0] = ' '
-	if again := MimoModelCatalogJSON(); len(again) == 0 || again[0] != '{' {
-		t.Fatal("MimoModelCatalogJSON must return a defensive copy")
+	if again := MimoCatalog.CatalogJSON(); len(again) == 0 || again[0] != '{' {
+		t.Fatal("MimoCatalog.CatalogJSON must return a defensive copy")
 	}
 
 	var catalog struct {
@@ -89,7 +88,7 @@ func TestMimoModelCatalogJSON(t *testing.T) {
 			} `json:"model_messages"`
 		} `json:"models"`
 	}
-	if err := json.Unmarshal(MimoModelCatalogJSON(), &catalog); err != nil {
+	if err := json.Unmarshal(MimoCatalog.CatalogJSON(), &catalog); err != nil {
 		t.Fatalf("MiMo model catalog must be valid JSON: %v", err)
 	}
 	if len(catalog.Models) != 2 {

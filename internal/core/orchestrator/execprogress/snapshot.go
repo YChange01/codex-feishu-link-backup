@@ -83,14 +83,6 @@ func CloneFileChangeRecord(change *state.ExecCommandProgressFileChangeRecord) *s
 	return &cloned
 }
 
-func CloneReasoningRecord(record *state.ExecCommandProgressReasoningRecord) *state.ExecCommandProgressReasoningRecord {
-	if record == nil {
-		return nil
-	}
-	cloned := *record
-	return &cloned
-}
-
 func reasoningSlotItemID(record *state.ExecCommandProgressReasoningRecord) string {
 	if record == nil || strings.TrimSpace(record.ItemID) == "" {
 		return "reasoning_summary::latest"

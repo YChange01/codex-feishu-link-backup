@@ -242,13 +242,6 @@ export function SetupRoute() {
     return workflowState;
   }
 
-  async function refreshWorkflow(options?: { preserveDisplayedStep?: boolean }) {
-    await loadSetupPage({
-      preferredAppID: activeApp?.id || selectedAppID,
-      preserveDisplayedStep: options?.preserveDisplayedStep,
-    });
-  }
-
   function rememberImmediateAutoConfig(
     appID: string,
     view?: FeishuAppAutoConfigPlanView,

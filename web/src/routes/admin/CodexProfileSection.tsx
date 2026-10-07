@@ -220,7 +220,6 @@ export function CodexProfileSection(props: CodexProfileSectionProps) {
     <>
       <ConfigSectionShell
         sectionTitle="Codex"
-        sectionDescription="管理 Codex 连接与上下文偏好"
         emptyLoadErrorTitle="当前还不能读取 Codex 配置"
         loadError={loadError}
         onReload={onReload}

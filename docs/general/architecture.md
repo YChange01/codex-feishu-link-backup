@@ -2,7 +2,7 @@
 
 > Type: `general`
 > Updated: `2026-10-07`
-> Summary: 分离 Link 公开产品身份与安装兼容命名空间，明确共享桌面权限继承、飞书已配置权限与实际授权的所有权边界及发布兼容链。
+> Summary: 分离 Link 产品身份与安装兼容命名空间，明确权限事实所有权，并收口生产/测试编译边界、桌面状态模块与模型目录入口。
 
 ## 1. 当前状态
 
@@ -359,6 +359,14 @@ Feishu projector 只消费 `UIEvent`，不直接理解 app-server 原生协议�
 Drive preview 与 LiveGateway 共用同一个调用 broker。Drive SDK 的业务错误在 broker callback 内产生，真实缺权向 daemon 记录；重复同 API 请求在现有 cooldown 中短路。肯定授权结果或 cooldown 后同 API 的真实成功才能清理已观测缺口。controller 核对 runtime 身份与 worker generation，并复用既有 action gate 排空已准入的权限回调，通知在锁外完成。授权查询在网络请求结束后重新核对配置与实际 worker 的应用身份、凭据和域名，再与 runtime 替换串行应用结果。若生命周期正在变更，本次验证结果直接舍弃并保留缺口，后续刷新或真实 API 重试仍可恢复；不能让 gate 内的刷新反向等待正在排空该 gate 的生命周期锁。启动前缓存必须重新确认，避免重启直接采用旧权限事实。
 
 当前架构继续保留 wrapper / orchestrator / Feishu adapter 三层。此次重构收口的是跨层事实来源，而不是增加平行状态中心。配置/凭据、审批策略和 UI 展示分别由上述 owner 管理。
+
+### 5.6 生产代码与测试辅助的边界
+
+Codex 协议覆盖清单与飞书事件/回调测试卡片构造器仅供同包测试使用，分别放在 `protocol_coverage_manifest_test.go` 和 `app_test_cards_fixture_test.go`。协议覆盖及卡片断言继续执行，这些 fixture 不参与生产包编译。
+
+`internal/app/desktopsession` 保留 daemon 使用的状态类型与状态文件读写；未接入 CLI、安装器或其他生产入口的客户端解析、启动、打开页面及退出调用链已删除。daemon 的 desktop-session HTTP 端点继续由 daemon 自己持有。Windows 自动启动检测统一走现有 `probeTaskSchedulerAutostart`，XML 与本地化缺失任务的回归直接覆盖该入口。
+
+内置模型目录统一通过 `EmbeddedCatalog` 的识别、路径和 JSON 方法访问；不再保留无调用方的 provider 专用包装。管理页只保留实际使用的公共组件，权限需求与 VS Code readiness 测试直接验证当前页面使用的投影函数，避免测试继续维持已停用的平行实现。
 
 ## 6. 关键运行流
 

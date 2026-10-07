@@ -1,7 +1,6 @@
 package xutil
 
 import (
-	"path/filepath"
 	"runtime"
 	"strings"
 
@@ -15,17 +14,6 @@ func BoolString(value bool) string {
 		return "true"
 	}
 	return "false"
-}
-
-// CleanPath trims and cleans path with filepath.Clean, returning "" for empty
-// or whitespace-only input. It consolidates the cleanNonEmpty copies in
-// vscodeshim and shim.
-func CleanPath(path string) string {
-	path = strings.TrimSpace(path)
-	if path == "" {
-		return ""
-	}
-	return filepath.Clean(path)
 }
 
 // MetadataString returns the trimmed string value for key in metadata, or ""

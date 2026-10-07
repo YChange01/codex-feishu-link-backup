@@ -10,6 +10,7 @@ import type {
   ClaudeProfileWriteRequest,
   CodexContextPreferenceResponse,
 } from "../../lib/types";
+import { blankToUndefined } from "../shared/helpers";
 import {
   ConfigDeleteConfirmModal,
   ConfigFormDetailCard,
@@ -181,7 +182,6 @@ export function ClaudeProfileSection(props: ClaudeProfileSectionProps) {
     <>
       <ConfigSectionShell
         sectionTitle="Claude"
-        sectionDescription="管理 Claude 连接与上下文偏好"
         emptyLoadErrorTitle="当前还不能读取 Claude 配置"
         loadError={loadError}
         onReload={onReload}
@@ -205,7 +205,6 @@ export function ClaudeProfileSection(props: ClaudeProfileSectionProps) {
           onDeleteTargetChange: setDeleteTargetID,
           onDraftChange: setDraft,
           onSave: (event) => void handleSave(event),
-          onStartCreate: startCreateBlank,
         })}
       />
 
@@ -251,7 +250,6 @@ type ClaudeDetailCardProps = Pick<
   onDeleteTargetChange: (value: string | null) => void;
   onDraftChange: Dispatch<SetStateAction<ClaudeProfileDraft>>;
   onSave: (event: FormEvent<HTMLFormElement>) => void;
-  onStartCreate: () => void;
 };
 
 function renderClaudeProfileDetailCard(props: ClaudeDetailCardProps) {
@@ -266,7 +264,6 @@ function renderClaudeProfileDetailCard(props: ClaudeDetailCardProps) {
     onDeleteTargetChange,
     onDraftChange,
     onSave,
-    onStartCreate,
   } = props;
 
   const title =
@@ -541,7 +538,7 @@ function buildCreatePayload(draft: ClaudeProfileDraft): ClaudeProfileWriteReques
   return {
     name: draft.name.trim(),
     baseURL: draft.baseURL.trim(),
-    authToken: optionalString(draft.authToken),
+    authToken: blankToUndefined(draft.authToken),
     model: draft.model.trim(),
     smallModel: draft.smallModel.trim(),
     subagentModel: draft.subagentModel.trim(),
@@ -562,16 +559,11 @@ function buildUpdatePayload(draft: ClaudeProfileDraft): ClaudeProfileWriteReques
     reasoningEffort: normalizeClaudeReasoningEffort(draft.reasoningEffort),
     visionSupported: draft.visionSupported,
   };
-  const authToken = optionalString(draft.authToken);
+  const authToken = blankToUndefined(draft.authToken);
   if (authToken) {
     payload.authToken = authToken;
   }
   return payload;
-}
-
-function optionalString(value: string): string | undefined {
-  const trimmed = value.trim();
-  return trimmed ? trimmed : undefined;
 }
 
 function normalizeClaudeReasoningEffort(value: string | undefined): string {

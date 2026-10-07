@@ -50,10 +50,6 @@ func workspacePickerPathsForGOOS(goos, initialPath, windowsFallbackPath string) 
 	return rootPath, initialPath
 }
 
-func workspaceCreatePickerRootForGOOS(goos, initialPath string) string {
-	return workspaceCreatePickerRootForGOOSWithFallback(goos, initialPath, windowsWorkspaceCreateFallbackPath())
-}
-
 func workspaceCreatePickerRootForGOOSWithFallback(goos, initialPath, windowsFallbackPath string) string {
 	initialPath = strings.TrimSpace(initialPath)
 	switch strings.ToLower(strings.TrimSpace(goos)) {

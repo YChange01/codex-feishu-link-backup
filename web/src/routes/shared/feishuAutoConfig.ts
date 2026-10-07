@@ -3,11 +3,6 @@ import type {
   FeishuAppAutoConfigRequirementStatus,
 } from "../../lib/types";
 
-export type AutoConfigRequirementDisplay = {
-  label: string;
-  detail: string;
-};
-
 export type AutoConfigRequirementRow = {
   key: string;
   kind: string;
@@ -106,21 +101,6 @@ export function describeAutoConfigRequirementLabel(
     return `回调 ${requirement.key}`;
   }
   return requirement.key;
-}
-
-export function describeAutoConfigRequirementDetail(
-  requirement: FeishuAppAutoConfigRequirementStatus,
-): string {
-  return describeAutoConfigRequirementImpacts(requirement).join("、");
-}
-
-export function describeAutoConfigRequirementDisplay(
-  requirement: FeishuAppAutoConfigRequirementStatus,
-): AutoConfigRequirementDisplay {
-  return {
-    label: describeAutoConfigRequirementLabel(requirement),
-    detail: describeAutoConfigRequirementDetail(requirement),
-  };
 }
 
 export function groupAutoConfigRequirements(

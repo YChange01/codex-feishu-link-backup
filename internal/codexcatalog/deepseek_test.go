@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestIsDeepSeekEndpoint(t *testing.T) {
+func TestDeepSeekCatalogMatchesEndpoint(t *testing.T) {
 	tests := []struct {
 		name    string
 		baseURL string
@@ -21,32 +21,17 @@ func TestIsDeepSeekEndpoint(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := IsDeepSeekEndpoint(tt.baseURL); got != tt.want {
-				t.Fatalf("IsDeepSeekEndpoint(%q) = %v, want %v", tt.baseURL, got, tt.want)
+			if got := DeepSeekCatalog.MatchesEndpoint(tt.baseURL); got != tt.want {
+				t.Fatalf("DeepSeekCatalog.MatchesEndpoint(%q) = %v, want %v", tt.baseURL, got, tt.want)
 			}
 		})
 	}
 }
 
-func TestIsDeepSeekProfile(t *testing.T) {
-	if !IsDeepSeekProfile("https://proxy.example/v1", "deepseek-v4-flash") {
-		t.Fatal("expected deepseek model prefix to identify DeepSeek profile")
-	}
-	if !IsDeepSeekProfile("https://api.deepseek.com/", "gpt-5.5") {
-		t.Fatal("expected DeepSeek endpoint to identify DeepSeek profile")
-	}
-	if IsDeepSeekProfile("https://proxy.example/v1", "provider-custom") {
-		t.Fatal("expected non-DeepSeek profile to stay generic")
-	}
-}
-
-func TestManagedDeepSeekModelCatalogPath(t *testing.T) {
+func TestManagedModelCatalogDir(t *testing.T) {
 	dir := ManagedModelCatalogDir("/var/lib/codex-feishu-relay")
 	if want := filepath.Join("/var/lib/codex-feishu-relay", "codex-model-catalogs"); dir != want {
 		t.Fatalf("ManagedModelCatalogDir = %q, want %q", dir, want)
-	}
-	if got := DeepSeekModelCatalogPath(dir); got != filepath.Join(dir, DeepSeekModelCatalogFileName) {
-		t.Fatalf("DeepSeekModelCatalogPath = %q", got)
 	}
 	if got := ManagedModelCatalogDir(""); got != "" {
 		t.Fatalf("empty state dir should not produce managed dir, got %q", got)
@@ -104,13 +89,13 @@ func TestBuildEmbeddedModelCatalogReusesDeepSeekEntry(t *testing.T) {
 }
 
 func TestDeepSeekModelCatalogJSON(t *testing.T) {
-	raw := DeepSeekModelCatalogJSON()
+	raw := DeepSeekCatalog.CatalogJSON()
 	if len(raw) == 0 {
 		t.Fatal("expected embedded DeepSeek model catalog")
 	}
 	raw[0] = ' '
-	if again := DeepSeekModelCatalogJSON(); len(again) == 0 || again[0] != '{' {
-		t.Fatal("DeepSeekModelCatalogJSON must return a defensive copy")
+	if again := DeepSeekCatalog.CatalogJSON(); len(again) == 0 || again[0] != '{' {
+		t.Fatal("DeepSeekCatalog.CatalogJSON must return a defensive copy")
 	}
 
 	var catalog struct {
@@ -128,7 +113,7 @@ func TestDeepSeekModelCatalogJSON(t *testing.T) {
 			} `json:"model_messages"`
 		} `json:"models"`
 	}
-	if err := json.Unmarshal(DeepSeekModelCatalogJSON(), &catalog); err != nil {
+	if err := json.Unmarshal(DeepSeekCatalog.CatalogJSON(), &catalog); err != nil {
 		t.Fatalf("DeepSeek model catalog must be valid JSON: %v", err)
 	}
 	if len(catalog.Models) != 2 {

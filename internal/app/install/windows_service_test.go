@@ -408,9 +408,12 @@ func TestTaskSchedulerDetectsEnabledFromXML(t *testing.T) {
 		return "", fmt.Errorf("unexpected schtasks call: %v", args)
 	})
 
-	enabled, warning, err := detectTaskSchedulerLogonEnabled(context.Background(), state)
+	configured, enabled, warning, err := probeTaskSchedulerAutostart(context.Background(), state)
 	if err != nil {
-		t.Fatalf("detectTaskSchedulerLogonEnabled: %v", err)
+		t.Fatalf("probeTaskSchedulerAutostart: %v", err)
+	}
+	if !configured {
+		t.Fatal("existing task must be reported as configured")
 	}
 	if warning != "" {
 		t.Fatalf("warning = %q, want empty", warning)
@@ -444,9 +447,12 @@ func TestTaskSchedulerDetectsDisabledFromSettingsXMLWhenTriggerStaysEnabled(t *t
 		return "", fmt.Errorf("unexpected schtasks call: %v", args)
 	})
 
-	enabled, warning, err := detectTaskSchedulerLogonEnabled(context.Background(), state)
+	configured, enabled, warning, err := probeTaskSchedulerAutostart(context.Background(), state)
 	if err != nil {
-		t.Fatalf("detectTaskSchedulerLogonEnabled: %v", err)
+		t.Fatalf("probeTaskSchedulerAutostart: %v", err)
+	}
+	if !configured {
+		t.Fatal("existing task must be reported as configured")
 	}
 	if warning != "" {
 		t.Fatalf("warning = %q, want empty", warning)
@@ -480,9 +486,12 @@ func TestTaskSchedulerDetectsEnabledFromXMLWhenEnabledIsMissing(t *testing.T) {
 		return "", fmt.Errorf("unexpected schtasks call: %v", args)
 	})
 
-	enabled, warning, err := detectTaskSchedulerLogonEnabled(context.Background(), state)
+	configured, enabled, warning, err := probeTaskSchedulerAutostart(context.Background(), state)
 	if err != nil {
-		t.Fatalf("detectTaskSchedulerLogonEnabled: %v", err)
+		t.Fatalf("probeTaskSchedulerAutostart: %v", err)
+	}
+	if !configured {
+		t.Fatal("existing task must be reported as configured")
 	}
 	if warning != "" {
 		t.Fatalf("warning = %q, want empty", warning)
@@ -581,9 +590,12 @@ func TestTaskSchedulerDetectsEnabledFromPSRegisteredXMLWithUTF16Declaration(t *t
 		return "", fmt.Errorf("unexpected schtasks call: %v", args)
 	})
 
-	enabled, warning, err := detectTaskSchedulerLogonEnabled(context.Background(), state)
+	configured, enabled, warning, err := probeTaskSchedulerAutostart(context.Background(), state)
 	if err != nil {
-		t.Fatalf("detectTaskSchedulerLogonEnabled: %v", err)
+		t.Fatalf("probeTaskSchedulerAutostart: %v", err)
+	}
+	if !configured {
+		t.Fatal("existing task must be reported as configured")
 	}
 	if warning != "" {
 		t.Fatalf("warning = %q, want empty", warning)
@@ -617,9 +629,12 @@ func TestTaskSchedulerMissingLocalizedOutputIsDisabled(t *testing.T) {
 		return "", fmt.Errorf("unexpected schtasks call: %v", args)
 	})
 
-	enabled, warning, err := detectTaskSchedulerLogonEnabled(context.Background(), state)
+	configured, enabled, warning, err := probeTaskSchedulerAutostart(context.Background(), state)
 	if err != nil {
-		t.Fatalf("detectTaskSchedulerLogonEnabled: %v", err)
+		t.Fatalf("probeTaskSchedulerAutostart: %v", err)
+	}
+	if configured {
+		t.Fatal("missing task must not be reported as configured")
 	}
 	if enabled || warning != "" {
 		t.Fatalf("enabled=%v warning=%q, want disabled without warning", enabled, warning)

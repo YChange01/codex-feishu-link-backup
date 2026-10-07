@@ -425,25 +425,6 @@ func taskSchedulerLogonStatus(ctx context.Context, state InstallState) (string, 
 	return taskSchedulerRunner(ctx, "/Query", "/TN", taskSchedulerTaskNameForInstance(state.InstanceID), "/FO", "LIST", "/V")
 }
 
-func detectTaskSchedulerLogonEnabled(ctx context.Context, state InstallState) (bool, string, error) {
-	state, err := taskSchedulerLogonServiceState(state)
-	if err != nil {
-		return false, "", err
-	}
-	output, err := taskSchedulerRunner(ctx, "/Query", "/TN", taskSchedulerTaskNameForInstance(state.InstanceID), "/XML")
-	if err != nil {
-		if isTaskSchedulerMissingErr(err) {
-			return false, "", nil
-		}
-		return false, output, err
-	}
-	enabled, ok := parseTaskSchedulerEnabled(output)
-	if !ok {
-		return false, "无法解析自动启动任务状态。", nil
-	}
-	return enabled, "", nil
-}
-
 func taskSchedulerLogonIsRunning(ctx context.Context, state InstallState) (bool, error) {
 	output, err := taskSchedulerLogonStatus(ctx, state)
 	if err != nil {

@@ -74,25 +74,3 @@ export function vscodeApplyModeForScenario(vscode: VSCodeDetectResponse | null, 
       return null;
   }
 }
-
-export function currentVSCodeSummary(vscode: VSCodeDetectResponse | null): string {
-  if (!vscode) {
-    return "暂未处理";
-  }
-  if (vscode.settings.matchesBinary) {
-    return "检测到旧版 settings.json 接入，需迁移到扩展入口";
-  }
-  if (vscode.needsShimReinstall) {
-    return "VS Code 集成需要修复";
-  }
-  if (vscodeIsReady(vscode)) {
-    if (!vscode.latestShim.matchesBinary) {
-      return "VS Code 集成可用，可稍后更新";
-    }
-    if (vscode.sshSession) {
-      return "已在这台远程机器上接入（扩展入口）";
-    }
-    return "已在这台机器上接入（扩展入口）";
-  }
-  return "暂未处理";
-}

@@ -16,38 +16,12 @@ const (
 //go:embed deepseek_models.json mimo_models.json
 var embeddedCatalogsFS embed.FS
 
-// IsDeepSeekProfile 报告 baseURL/模型名是否命中 DeepSeek 内置模型目录。
-func IsDeepSeekProfile(baseURL, model string) bool {
-	catalog, ok := IdentifyEmbeddedCatalog(baseURL, model)
-	return ok && catalog.Kind == "deepseek"
-}
-
-func IsDeepSeekEndpoint(baseURL string) bool {
-	return DeepSeekCatalog.MatchesEndpoint(baseURL)
-}
-
 func ManagedModelCatalogDir(stateDir string) string {
 	stateDir = strings.TrimSpace(stateDir)
 	if stateDir == "" {
 		return ""
 	}
 	return filepath.Join(stateDir, managedModelCatalogDirName)
-}
-
-func DeepSeekModelCatalogPath(dir string) string {
-	dir = strings.TrimSpace(dir)
-	if dir == "" {
-		return ""
-	}
-	return filepath.Join(dir, DeepSeekModelCatalogFileName)
-}
-
-func DeepSeekModelCatalogJSON() []byte {
-	return DeepSeekCatalog.CatalogJSON()
-}
-
-func MimoModelCatalogJSON() []byte {
-	return MimoCatalog.CatalogJSON()
 }
 
 // BuildEmbeddedModelCatalog 以指定内置目录为模板，生成只包含请求模型子集的
